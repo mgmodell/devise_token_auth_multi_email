@@ -30,12 +30,25 @@ module DeviseTokenAuth::Concerns::ResourceFinder
 
     @resource = if :email == field && !@@multi_email_field
                   resource_class.find_by_email value
-                elsif resource_class.try(:connection_config).try(:[], :adapter).try(:include?, 'mysql')
+                elsif database_adapter&.include?('mysql')
                   # fix for mysql default case insensitivity
                   resource_class.where("BINARY #{field} = ? AND provider= ?", value, provider).first
                 else
                   resource_class.dta_find_by(field => value, 'provider' => provider)
                 end
+  end
+
+  def database_adapter
+    @database_adapter ||= begin
+      rails_version = [Rails::VERSION::MAJOR, Rails::VERSION::MINOR].join(".")
+
+      adapter =
+        if rails_version >= "6.1"
+          resource_class.try(:connection_db_config)&.try(:adapter)
+        else
+          resource_class.try(:connection_config)&.try(:[], :adapter)
+        end
+    end
   end
 
   def resource_class(m = nil)
