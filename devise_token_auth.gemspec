@@ -11,7 +11,7 @@ Gem::Specification.new do |s|
   s.version     = DeviseTokenAuth::VERSION
   s.authors     = ['Lynn Hurley']
   s.email       = ['lynn.dylan.hurley@gmail.com']
-  s.homepage    = 'http://github.com/lynndylanhurley/devise_token_auth'
+  s.homepage    = 'https://github.com/lynndylanhurley/devise_token_auth'
   s.summary     = 'Token based authentication for rails. Uses Devise + OmniAuth.'
   s.description = 'For use with client side single page apps such as the venerable https://github.com/lynndylanhurley/ng-token-auth.'
   s.license     = 'WTFPL'
@@ -31,5 +31,5 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'pg'
   s.add_development_dependency 'mysql2'
   s.add_development_dependency 'mongoid', '>= 4', '< 8'
-  s.add_development_dependency 'mongoid-locker', '~> 1.0'
+  s.add_development_dependency 'mongoid-locker', '~> 2.0'
 end
