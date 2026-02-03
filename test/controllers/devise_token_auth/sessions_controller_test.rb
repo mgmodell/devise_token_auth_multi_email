@@ -39,11 +39,15 @@ class DeviseTokenAuth::SessionsControllerTest < ActionController::TestCase
         describe 'using auth cookie' do
           before do
             DeviseTokenAuth.cookie_enabled = true
+            post :create, params: @user_session_params
           end
 
           test 'request should return auth cookie' do
-            post :create, params: @user_session_params
             assert response.cookies[DeviseTokenAuth.cookie_name]
+          end
+
+          test 'request should not include bearer token' do
+            assert_nil response.headers["Authorization"]
           end
 
           after do
@@ -306,23 +310,47 @@ class DeviseTokenAuth::SessionsControllerTest < ActionController::TestCase
     end
 
     describe 'Unconfirmed user' do
-      before do
-        @unconfirmed_user = create(:user)
-        post :create, params: { email: @unconfirmed_user.email,
-                                password: @unconfirmed_user.password }
-        @resource = assigns(:resource)
-        @data = JSON.parse(response.body)
-      end
+      describe 'Without paranoid mode' do
+        before do
+          @unconfirmed_user = create(:user)
+          post :create, params: { email: @unconfirmed_user.email,
+                                  password: @unconfirmed_user.password }
+          @resource = assigns(:resource)
+          @data = JSON.parse(response.body)
+        end
 
-      test 'request should fail' do
-        assert_equal 401, response.status
-      end
+        test 'request should fail' do
+          assert_equal 401, response.status
+        end
 
-      test 'response should contain errors' do
-        assert @data['errors']
-        assert_equal @data['errors'],
-                     [I18n.t('devise_token_auth.sessions.not_confirmed',
-                             email: @unconfirmed_user.email)]
+        test 'response should contain errors' do
+          assert @data['errors']
+          assert_equal @data['errors'],
+                      [I18n.t('devise_token_auth.sessions.not_confirmed',
+                              email: @unconfirmed_user.email)]
+        end
+      end
+      
+      describe 'With paranoid mode' do
+        before do
+          @unconfirmed_user = create(:user)
+          swap Devise, paranoid: true do
+            post :create, params: { email: @unconfirmed_user.email,
+                                    password: @unconfirmed_user.password }
+          end
+          @resource = assigns(:resource)
+          @data = JSON.parse(response.body)
+        end
+
+        test 'request should fail' do
+          assert_equal 401, response.status
+        end
+
+        test 'response should contain errors that do not leak the existence of the account' do
+          assert @data['errors']
+          assert_equal @data['errors'],
+                      [I18n.t('devise_token_auth.sessions.bad_credentials')]
+        end
       end
     end
 
@@ -371,20 +399,42 @@ class DeviseTokenAuth::SessionsControllerTest < ActionController::TestCase
     end
 
     describe 'Non-existing user' do
-      before do
-        post :create,
-             params: { email: -> { Faker::Internet.email },
-                       password: -> { Faker::Number.number(10) } }
-        @resource = assigns(:resource)
-        @data = JSON.parse(response.body)
+      describe 'Without paranoid mode' do
+        before do
+          post :create,
+              params: { email: -> { Faker::Internet.email },
+                        password: -> { Faker::Number.number(10) } }
+          @resource = assigns(:resource)
+          @data = JSON.parse(response.body)
+        end
+
+        test 'request should fail' do
+          assert_equal 401, response.status
+        end
+
+        test 'response should contain errors' do
+          assert @data['errors']
+        end
       end
 
-      test 'request should fail' do
-        assert_equal 401, response.status
-      end
+      describe 'With paranoid mode' do
+        before do
+          mock_hash = '$2a$04$MUWADkfA6MHXDdWHoep6QOvX1o0Y56pNqt3NMWQ9zCRwKSp1HZJba'
+          @bcrypt_mock = Minitest::Mock.new
+          @bcrypt_mock.expect(:call, mock_hash, [Object, String])
 
-      test 'response should contain errors' do
-        assert @data['errors']
+          swap Devise, paranoid: true do
+            BCrypt::Engine.stub :hash_secret, @bcrypt_mock do
+              post :create,
+                  params: { email: -> { Faker::Internet.email },
+                            password: -> { Faker::Number.number(10) } }
+            end
+          end
+        end
+        
+        test 'password should be hashed' do
+          @bcrypt_mock.verify
+        end
       end
     end
 
@@ -468,21 +518,44 @@ class DeviseTokenAuth::SessionsControllerTest < ActionController::TestCase
       end
 
       describe 'locked user' do
-        before do
-          @locked_user = create(:lockable_user, :locked)
-          post :create,
-               params: { email: @locked_user.email,
-                         password: @locked_user.password }
-          @data = JSON.parse(response.body)
+        describe 'Without paranoid mode' do
+          before do
+            @locked_user = create(:lockable_user, :locked)
+            post :create,
+                params: { email: @locked_user.email,
+                          password: @locked_user.password }
+            @data = JSON.parse(response.body)
+          end
+
+          test 'request should fail' do
+            assert_equal 401, response.status
+          end
+
+          test 'response should contain errors' do
+            assert @data['errors']
+            assert_equal @data['errors'], [I18n.t('devise.mailer.unlock_instructions.account_lock_msg')]
+          end
         end
 
-        test 'request should fail' do
-          assert_equal 401, response.status
-        end
+        describe 'With paranoid mode' do
+          before do
+            @locked_user = create(:lockable_user, :locked)
+            swap Devise, paranoid: true do
+              post :create,
+                  params: { email: @locked_user.email,
+                            password: @locked_user.password }
+            end
+            @data = JSON.parse(response.body)
+          end
 
-        test 'response should contain errors' do
-          assert @data['errors']
-          assert_equal @data['errors'], [I18n.t('devise.mailer.unlock_instructions.account_lock_msg')]
+          test 'request should fail' do
+            assert_equal 401, response.status
+          end
+
+          test 'response should contain errors that do not leak the existence of the account' do
+            assert @data['errors']
+            assert_equal @data['errors'], [I18n.t('devise_token_auth.sessions.bad_credentials')]
+          end
         end
       end
 

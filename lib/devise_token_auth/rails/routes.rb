@@ -65,8 +65,8 @@ module ActionDispatch::Routing
 
           # omniauth routes. only define if omniauth is installed and not skipped.
           if defined?(::OmniAuth) && !opts[:skip].include?(:omniauth_callbacks)
-            match "#{full_path}/failure",             controller: omniauth_ctrl, action: 'omniauth_failure', via: [:get]
-            match "#{full_path}/:provider/callback",  controller: omniauth_ctrl, action: 'omniauth_success', via: [:get]
+            match "#{full_path}/failure",             controller: omniauth_ctrl, action: 'omniauth_failure', via: [:get, :post]
+            match "#{full_path}/:provider/callback",  controller: omniauth_ctrl, action: 'omniauth_success', via: [:get, :post]
 
             match "#{DeviseTokenAuth.omniauth_prefix}/:provider/callback", controller: omniauth_ctrl, action: 'redirect_callbacks', via: [:get, :post]
             match "#{DeviseTokenAuth.omniauth_prefix}/failure", controller: omniauth_ctrl, action: 'omniauth_failure', via: [:get, :post]
@@ -75,7 +75,8 @@ module ActionDispatch::Routing
             # resource as "resource_class" param
             match "#{full_path}/:provider", to: redirect(status: 307) { |params, request|
               # get the current querystring
-              qs = CGI::parse(request.env['QUERY_STRING'])
+              # TODO: deprecate in favor of using params
+              qs = CGI::parse(request.env['QUERY_STRING'].empty? ? request.body.read : request.env['QUERY_STRING'] )
 
               # append name of current resource
               qs['resource_class'] = [resource]

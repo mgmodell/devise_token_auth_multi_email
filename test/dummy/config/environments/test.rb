@@ -15,20 +15,28 @@ Rails.application.configure do
   config.eager_load = false
 
   # Configure static asset server for tests with Cache-Control for performance.
-  Rails::VERSION::MAJOR == 5 ?
+  Rails::VERSION::MAJOR >= 5 ?
       (config.public_file_server.enabled = true) :
       (config.serve_static_files  = true)
 
-  Rails::VERSION::MAJOR == 5 ?
+  Rails::VERSION::MAJOR >= 5 ?
       (config.public_file_server.headers = { 'Cache-Control' => 'public, max-age=3600' }) :
       (config.static_cache_control = 'public, max-age=3600')
+
+  if Rails::VERSION::MAJOR < 7 && ENV['DEVISE_TOKEN_AUTH_ORM'] != 'mongoid'
+    config.active_record.legacy_connection_handling = false
+  end
 
   # Show full error reports and disable caching.
   config.consider_all_requests_local       = true
   config.action_controller.perform_caching = false
 
   # Raise exceptions instead of rendering exception templates.
-  config.action_dispatch.show_exceptions = false
+  if Rails::VERSION::MAJOR >= 7 && Rails::VERSION::MINOR > 0
+    config.action_dispatch.show_exceptions = :none
+  else
+    config.action_dispatch.show_exceptions = false
+  end
 
   # Disable request forgery protection in test environment.
   config.action_controller.allow_forgery_protection = false

@@ -22,11 +22,15 @@ module DeviseTokenAuth
           redirect_to_link = signed_in_resource.build_auth_url(redirect_url, redirect_headers)
         else
           redirect_to_link = DeviseTokenAuth::Url.generate(redirect_url, redirect_header_options)
-       end
+        end
 
-        redirect_to(redirect_to_link)
+        redirect_to(redirect_to_link, redirect_options)
       else
-        raise ActionController::RoutingError, 'Not Found'
+        if redirect_url
+          redirect_to DeviseTokenAuth::Url.generate(redirect_url, account_confirmation_success: false), redirect_options
+        else
+          raise ActionController::RoutingError, 'Not Found'
+        end
       end
     end
 
@@ -81,6 +85,5 @@ module DeviseTokenAuth
         DeviseTokenAuth.default_confirm_success_url
       )
     end
-
   end
 end

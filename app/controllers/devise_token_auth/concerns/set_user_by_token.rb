@@ -111,7 +111,7 @@ module DeviseTokenAuth::Concerns::SetUserByToken
       # cleared by sign out in the meantime
       return if @resource.reload.tokens[@token.client].nil?
 
-      auth_header = @resource.build_auth_header(@token.token, @token.client)
+      auth_header = @resource.build_auth_headers(@token.token, @token.client)
 
       # update the response header
       response.headers.merge!(auth_header)
@@ -154,8 +154,8 @@ module DeviseTokenAuth::Concerns::SetUserByToken
       # update the response header
       response.headers.merge!(_auth_header_from_batch_request)
 
-      # set a server cookie if configured
-      if DeviseTokenAuth.cookie_enabled
+      # set a server cookie if configured and is not a batch request
+      if DeviseTokenAuth.cookie_enabled && !@is_batch_request
         set_cookie(_auth_header_from_batch_request)
       end
     end # end lock
