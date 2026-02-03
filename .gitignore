@@ -19,3 +19,5 @@ Gemfile.lock
 
 # appraisal
 gemfiles/*.lock
+
+**/.DS_Store

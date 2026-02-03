@@ -29,9 +29,10 @@ group :development, :test do
   # testing
   # gem 'spring'
   gem 'database_cleaner'
-  gem 'devise-multi_email'
+  gem 'devise-multi_email', git: 'https://github.com/allenwq/devise-multi_email'
   gem 'factory_bot_rails'
   gem 'faker'
+  gem 'faraday-retry'
   gem 'fuzz_ball'
   gem 'guard'
   gem 'guard-minitest'

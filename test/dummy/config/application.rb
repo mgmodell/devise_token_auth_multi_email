@@ -38,6 +38,8 @@ module Dummy
     config.autoload_paths << Rails.root.join('lib')
     config.autoload_paths += ["#{config.root}/app/#{DEVISE_TOKEN_AUTH_ORM}"]
 
+    config.active_record.legacy_connection_handling = false
+
     if DEVISE_TOKEN_AUTH_ORM == :mongoid
       Mongoid.configure do |config|
         config.load! Rails.root.join('./config/mongoid.yml')
