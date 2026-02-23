@@ -17,6 +17,9 @@ tags
 
 Gemfile.lock
 
+# Ignore the build gem
+devise_token_auth_multi_email-*.gem
+
 # appraisal
 gemfiles/*.lock
 
