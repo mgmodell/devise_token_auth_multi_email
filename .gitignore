@@ -13,6 +13,7 @@ coverage
 .irb_history
 .ruby-version
 .ruby-gemset
+.rake_tasks
 tags
 **/*.swp
 
