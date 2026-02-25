@@ -17,8 +17,6 @@ jobs:
           - 3.3
           - 3.4
         gemfile:
-          - gemfiles/rails_4_2.gemfile
-          - gemfiles/rails_5_0.gemfile
           - gemfiles/rails_5_1.gemfile
           - gemfiles/rails_5_2.gemfile
           - gemfiles/rails_6_0.gemfile
@@ -30,14 +28,6 @@ jobs:
         devise-token-auth-orm:
           - active_record
         include:
-          - ruby: 2.7
-            gemfile: gemfiles/rails_6_0_mongoid_7.gemfile
-            devise-token-auth-orm: mongoid
-          - ruby: 2.7
-            gemfile: gemfiles/rails_7_0_mongoid_7.gemfile
-            devise-token-auth-orm: mongoid
-          - ruby: 2.7
-            gemfile: gemfiles/rails_7_0.gemfile
           - ruby: '3.0'
             gemfile: gemfiles/rails_7_0.gemfile
           - ruby: '3.0'
@@ -64,38 +54,10 @@ jobs:
             gemfile: gemfiles/rails_7_0_mongoid_7.gemfile
             devise-token-auth-orm: mongoid
         exclude:
-          - ruby: 2.7
-            gemfile: gemfiles/rails_4_2.gemfile
-          - ruby: 2.7
-            gemfile: gemfiles/rails_5_0.gemfile
-          - ruby: 2.7
-            gemfile: gemfiles/rails_5_1.gemfile
-          - ruby: 2.7
-            gemfile: gemfiles/rails_5_2.gemfile
-          - ruby: '3.0'
-            gemfile: gemfiles/rails_4_2.gemfile
-          - ruby: '3.0'
-            gemfile: gemfiles/rails_5_0.gemfile
-          - ruby: '3.0'
-            gemfile: gemfiles/rails_5_1.gemfile
-          - ruby: '3.0'
-            gemfile: gemfiles/rails_5_2.gemfile
           - ruby: '3.0'
             gemfile: gemfiles/rails_6_0.gemfile
           - ruby: 3.1
-            gemfile: gemfiles/rails_4_2.gemfile
-          - ruby: 3.1
-            gemfile: gemfiles/rails_5_0.gemfile
-          - ruby: 3.1
-            gemfile: gemfiles/rails_5_1.gemfile
-          - ruby: 3.1
-            gemfile: gemfiles/rails_5_2.gemfile
-          - ruby: 3.1
             gemfile: gemfiles/rails_6_0.gemfile
-          - ruby: 3.2
-            gemfile: gemfiles/rails_4_2.gemfile
-          - ruby: 3.2
-            gemfile: gemfiles/rails_5_0.gemfile
           - ruby: 3.2
             gemfile: gemfiles/rails_5_1.gemfile
           - ruby: 3.2
@@ -103,19 +65,11 @@ jobs:
           - ruby: 3.2
             gemfile: gemfiles/rails_6_0.gemfile
           - ruby: 3.3
-            gemfile: gemfiles/rails_4_2.gemfile
-          - ruby: 3.3
-            gemfile: gemfiles/rails_5_0.gemfile
-          - ruby: 3.3
             gemfile: gemfiles/rails_5_1.gemfile
           - ruby: 3.3
             gemfile: gemfiles/rails_5_2.gemfile
           - ruby: 3.3
             gemfile: gemfiles/rails_6_0.gemfile
-          - ruby: 3.4
-            gemfile: gemfiles/rails_4_2.gemfile
-          - ruby: 3.4
-            gemfile: gemfiles/rails_5_0.gemfile
           - ruby: 3.4
             gemfile: gemfiles/rails_5_1.gemfile
           - ruby: 3.4
