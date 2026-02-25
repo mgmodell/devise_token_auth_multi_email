@@ -9,7 +9,6 @@ gem "sqlite3", "~> 1.4.1"
 gem "mysql2"
 gem "pg"
 gem 'concurrent-ruby', '1.3.4'
-gem 'devise-multi_email_revived'
 
 group :development, :test do
   gem "attr_encrypted"

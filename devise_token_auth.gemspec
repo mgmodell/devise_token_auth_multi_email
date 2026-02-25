@@ -22,12 +22,14 @@ Gem::Specification.new do |s|
 
   s.files      = Dir['{app,config,db,lib}/**/*', 'LICENSE', 'Rakefile', 'README.md']
   s.test_files = Dir['test/**/*']
-  s.test_files.reject! { |file| file.match(/[.log|.sqlite3]$/) }
+  s.test_files.reject! do |file|
+    file.match(/[.log|.sqlite3]$/)
+  end
 
   s.required_ruby_version = ">= 3.0"
 
   s.add_dependency 'rails', '>= 4.2.0', '<= 8.2'
-  s.add_dependency 'devise', '> 3.5.2', '< 6.0'
+  # s.add_dependency 'devise', '> 3.5.2', '< 6.0'
   s.add_dependency 'bcrypt', '~> 3.0'
   s.add_dependency 'devise-multi_email_revived', '~> 3.1'
 

@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'devise'
+require 'devise_multi_email_revived'
 
 module DeviseTokenAuth
 end
