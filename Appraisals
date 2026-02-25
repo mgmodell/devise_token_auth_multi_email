@@ -1,7 +1,10 @@
 # frozen_string_literal: true
 
 [
-  { name: '7-0', version: '7.0' }
+  { name: '6-0', version: '6.0' },
+  { name: '7-0', version: '7.0' },
+  { name: '7-2', version: '7.2' },
+  { name: '8-0', version: '8.0' }
 ].each do |rails|
   appraise "rails-#{rails[:name]}" do
     gem 'rails', "~> #{rails[:version]}"
