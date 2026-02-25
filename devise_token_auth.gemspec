@@ -26,7 +26,8 @@ Gem::Specification.new do |s|
     file.match(/[.log|.sqlite3]$/)
   end
 
-  s.required_ruby_version = ">= 3.0"
+  s.required_ruby_version = ">= 2.3.0"
+
 
   s.add_dependency 'rails', '>= 4.2.0', '<= 8.2'
   # s.add_dependency 'devise', '> 3.5.2', '< 6.0'
