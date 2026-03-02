@@ -6,6 +6,11 @@ SimpleCov.start 'rails' do
   add_filter ['.bundle', 'test', 'config']
 end
 
+if ENV['CI']
+  require 'coveralls'
+  Coveralls.wear!
+end
+
 ENV['RAILS_ENV'] = 'test'
 DEVISE_TOKEN_AUTH_ORM = (ENV['DEVISE_TOKEN_AUTH_ORM'] || :active_record).to_sym
 
