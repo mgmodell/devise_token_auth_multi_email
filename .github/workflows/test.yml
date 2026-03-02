@@ -1,13 +1,13 @@
 name: Test
-environment: test
-env:
-  COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
 
 on:
   push:
   pull_request:
 
 jobs:
+  environment: test
+  env:
+    COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
   test:
     strategy:
       fail-fast: false
