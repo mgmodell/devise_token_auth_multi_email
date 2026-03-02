@@ -11,8 +11,7 @@ Gem::Specification.new do |s|
   s.version     = DeviseTokenAuth::VERSION
   s.authors     = ['Lynn Hurley', 'Micah Gideon Modell']
   s.email       = ['lynn.dylan.hurley@gmail.com', 'micah.modell@gmail.com']
-  s.homepage    =
-  'https://github.com/mgmodell/devise_token_auth_multi_email'
+  s.homepage    = 'https://github.com/mgmodell/devise_token_auth_multi_email'
   s.summary     = 'Token based authentication for rails. Uses Devise + OmniAuth + multiple emails.'
   s.description = 'For use with client side single page apps such as ' +
     'the venerable https://github.com/lynndylanhurley/ng-token-auth. ' +
