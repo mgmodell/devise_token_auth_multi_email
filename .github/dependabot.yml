@@ -6,7 +6,8 @@
 version: 2
 updates:
   - package-ecosystem: "bundler"
-    directory: "/gemfiles/"
+    directories: # Location of package manifests
+      - "/gemfiles/"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 5
