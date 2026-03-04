@@ -16,6 +16,7 @@ gem 'omniauth-rails_csrf_protection'
 
 # To use debugger
 # gem 'debugger'
+gem 'devise-multi_email_revived'
 
 
 group :development, :test do
@@ -31,7 +32,6 @@ group :development, :test do
   # testing
   # gem 'spring'
   gem 'database_cleaner'
-  gem 'devise-multi_email_revived'
   gem 'factory_bot_rails'
   gem 'faker', '~> 3.2'
   gem 'faraday-retry'
