@@ -38,7 +38,7 @@ group :development, :test do
   gem 'fuzz_ball'
   gem 'minitest'
   gem 'minitest-focus'
-  gem 'minitest-rails', '~> 7'
+  gem 'minitest-rails', '>= 7'
   gem 'minitest-reporters'
   gem 'mocha', '>= 1.5'
   gem 'pry'
