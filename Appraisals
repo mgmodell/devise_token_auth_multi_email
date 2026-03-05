@@ -8,9 +8,10 @@
   appraise "rails-#{rails[:name]}" do
     gem 'rails', "~> #{rails[:version]}.0"
 
-    gem 'mysql2'
-    gem 'pg'
-    gem 'sqlite3'
+    db_adapter = ENV.fetch('DB', 'sqlite')
+    gem 'mysql2' if db_adapter == 'mysql'
+    gem 'pg' if db_adapter == 'postgresql'
+    gem 'sqlite3', '>= 2.1' if db_adapter == 'sqlite'
   end
 end
 
