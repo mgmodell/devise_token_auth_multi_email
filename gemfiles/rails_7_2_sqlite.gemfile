@@ -5,12 +5,8 @@ source "https://rubygems.org"
 gem "omniauth", "~> 2.0"
 gem "omniauth-rails_csrf_protection"
 gem "devise-multi_email_revived"
-gem "rails", "~> 7.0.0"
-
-db_adapter = ENV.fetch("DB", "sqlite")
-gem "mysql2" if db_adapter == "mysql"
-gem "pg" if db_adapter == "postgresql"
-gem "sqlite3", ">= 2.1" if db_adapter == "sqlite"
+gem "rails", "~> 7.2.0"
+gem "sqlite3", ">= 2.1"
 
 group :development, :test do
   gem "attr_encrypted"
