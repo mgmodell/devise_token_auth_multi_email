@@ -5,36 +5,12 @@
   { name: '7-2', version: '7.2' },
   { name: '8-0', version: '8.0' }
 ].each do |rails|
-    db_adapter = ENV.fetch('DB', 'not_found' )
-    case db_adapter
-    when 'mysql'
-        appraise "rails-#{rails[:name]}-mysql" do
-          gem 'rails', "~> #{rails[:version]}.0"
-          gem 'mysql2'
-        end
-    when 'postgresql'
-        appraise "rails-#{rails[:name]}-postgresql" do
-          gem 'rails', "~> #{rails[:version]}.0"
-          gem 'pg'
-        end
-    when 'sqlite'
-        appraise "rails-#{rails[:name]}-sqlite" do
-          gem 'rails', "~> #{rails[:version]}.0"
-          gem 'sqlite3', '>= 2.1'
-        end
-    else
-        appraise "rails-#{rails[:name]}-mysql" do
-          gem 'rails', "~> #{rails[:version]}.0"
-          gem 'mysql2'
-        end
-        appraise "rails-#{rails[:name]}-postgresql" do
-          gem 'rails', "~> #{rails[:version]}.0"
-          gem 'pg'
-        end
-        appraise "rails-#{rails[:name]}-sqlite" do
-          gem 'rails', "~> #{rails[:version]}.0"
-          gem 'sqlite3', '>= 2.1'
-        end
+    db_adapter = ENV.fetch('DB', 'sqlite' )
+    appraise "rails-#{rails[:name]}" do
+      gem 'rails', "~> #{rails[:version]}.0"
+      gem 'mysql2'if db_adapter == 'mysql'
+      gem 'pg' if db_adapter == 'postgresql'
+      gem 'sqlite3', '>= 2.1' if db_adapter == 'sqlite'
     end
 end
 
