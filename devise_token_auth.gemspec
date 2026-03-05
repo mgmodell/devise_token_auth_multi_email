@@ -29,7 +29,7 @@ Gem::Specification.new do |s|
 
 
   s.add_dependency 'rails', '>= 4.2.0', '<= 8.2'
-  # s.add_dependency 'devise', '> 3.5.2', '< 6.0'
+  s.add_dependency 'devise', '> 3.5.2', '< 6.0'
   s.add_dependency 'bcrypt', '~> 3.0'
   s.add_dependency 'devise-multi_email_revived', '~> 3.1'
 
