@@ -26,3 +26,4 @@ devise_token_auth_multi_email-*.gem
 gemfiles/*.lock
 
 **/.DS_Store
+*.gem
