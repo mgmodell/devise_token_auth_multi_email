@@ -64,6 +64,12 @@ jobs:
             gemfile: gemfiles/rails_6_0.gemfile
           - ruby: 3.4
             gemfile: gemfiles/rails_6_0.gemfile
+          - ruby: '3.0'
+            gemfile: gemfiles/rails_7_2.gemfile
+          - ruby: '3.0'
+            gemfile: gemfiles/rails_8_0.gemfile
+          - ruby: 3.1
+            gemfile: gemfiles/rails_8_0.gemfile
 
     services:
       mysql:
