@@ -1,4 +1,7 @@
 # Devise Token Auth Multi Email
+[![Dependabot Updates](https://github.com/mgmodell/devise_token_auth_multi_email/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/mgmodell/devise_token_auth_multi_email/actions/workflows/dependabot/dependabot-updates)
+[![Test](https://github.com/mgmodell/devise_token_auth_multi_email/actions/workflows/test.yml/badge.svg)](https://github.com/mgmodell/devise_token_auth_multi_email/actions/workflows/test.yml)
+[![Coverage Status](https://coveralls.io/repos/github/mgmodell/devise_token_auth_multi_email/badge.svg?branch=master)](https://coveralls.io/github/mgmodell/devise_token_auth_multi_email?branch=master)
 
 Simple, multi-client and secure token-based authentication for Rails.
 
