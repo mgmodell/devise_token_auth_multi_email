@@ -10,7 +10,9 @@
       gem 'rails', "~> #{rails[:version]}.0"
       gem 'mysql2'if db_adapter == 'mysql'
       gem 'pg' if db_adapter == 'postgresql'
-      gem 'sqlite3', '>= 2.1' if db_adapter == 'sqlite'
+      # Rails 7.0's sqlite3 adapter requires ~> 1.4; Rails 7.1+ supports >= 2.1
+      sqlite3_version = rails[:version] == '7.0' ? '~> 1.4' : '>= 2.1'
+      gem 'sqlite3', sqlite3_version if db_adapter == 'sqlite'
     end
 end
 
