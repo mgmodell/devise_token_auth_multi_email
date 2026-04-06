@@ -6,7 +6,7 @@ gem "omniauth", "~> 2.0"
 gem "omniauth-rails_csrf_protection"
 gem "devise-multi_email"
 gem "rails", "~> 7.0.0"
-gem "sqlite3", ">= 2.1"
+gem "sqlite3", "~>1.4"
 
 group :development, :test do
   gem "attr_encrypted"
