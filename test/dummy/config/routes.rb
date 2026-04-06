@@ -22,6 +22,11 @@ Rails.application.routes.draw do
 
   mount_devise_token_auth_for 'ConfirmableUser', at: 'confirmable_user_auth'
 
+  # MultiEmailUser uses devise-multi_email to manage email addresses via a
+  # separate emails association rather than a single email column.
+  mount_devise_token_auth_for 'MultiEmailUser', at: 'multi_email_auth',
+                              skip: [:omniauth_callbacks]
+
   # test namespacing
   namespace :api do
     scope :v1 do

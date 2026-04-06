@@ -37,5 +37,6 @@ FactoryBot.define do
     factory :only_email_user, class: 'OnlyEmailUser'
     factory :scoped_user, class: 'ScopedUser'
     factory :confirmable_user, class: 'ConfirmableUser'
+    factory :multi_email_user, class: 'MultiEmailUser'
   end
 end

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_09_24_101113) do
+ActiveRecord::Schema.define(version: 2026_04_01_000002) do
 
   create_table "confirmable_users", force: :cascade do |t|
     t.string "provider", default: "email", null: false
@@ -193,6 +193,43 @@ ActiveRecord::Schema.define(version: 2019_09_24_101113) do
     t.index ["nickname"], name: "index_users_on_nickname", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
     t.index ["uid", "provider"], name: "index_users_on_uid_and_provider", unique: true
+  end
+
+  create_table "multi_email_users", force: :cascade do |t|
+    t.string "email"
+    t.string "encrypted_password", default: "", null: false
+    t.string "reset_password_token"
+    t.datetime "reset_password_sent_at"
+    t.string "reset_password_redirect_url"
+    t.boolean "allow_password_change", default: false
+    t.datetime "remember_created_at"
+    t.string "confirmation_token"
+    t.datetime "confirmed_at"
+    t.datetime "confirmation_sent_at"
+    t.string "unconfirmed_email"
+    t.string "name"
+    t.string "nickname"
+    t.string "image"
+    t.string "provider"
+    t.string "uid", default: "", null: false
+    t.text "tokens"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.index ["email"], name: "index_multi_email_users_on_email"
+    t.index ["uid", "provider"], name: "index_multi_email_users_on_uid_and_provider", unique: true
+    t.index ["reset_password_token"], name: "index_multi_email_users_on_reset_password_token", unique: true
+    t.index ["confirmation_token"], name: "index_multi_email_users_on_confirmation_token", unique: true
+  end
+
+  create_table "multi_email_user_emails", force: :cascade do |t|
+    t.integer "multi_email_user_id", null: false
+    t.string  "email",               null: false
+    t.boolean "primary_email_record", null: false, default: false
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.index ["email"], name: "index_multi_email_user_emails_on_email", unique: true
+    t.index ["multi_email_user_id", "primary_email_record"],
+            name: "index_multi_email_user_emails_on_user_and_primary"
   end
 
 end
