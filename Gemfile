@@ -16,7 +16,7 @@ gem 'omniauth-rails_csrf_protection'
 
 # To use debugger
 # gem 'debugger'
-gem 'devise-multi_email_revived'
+gem 'devise-multi_email'
 
 
 group :development, :test do
