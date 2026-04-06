@@ -52,10 +52,7 @@ class ActiveSupport::TestCase
                  mongoid: :deletion }
   DatabaseCleaner.strategy = strategies[DEVISE_TOKEN_AUTH_ORM]
   setup { DatabaseCleaner.start }
-  teardown do
-    DatabaseCleaner.clean
-    Faker::UniqueGenerator.clear
-  end
+  teardown { DatabaseCleaner.clean }
 
   # Add more helper methods to be used by all tests here...
 
