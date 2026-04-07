@@ -7,10 +7,19 @@ class DeviseTokenAuthCreateMultiEmailUserEmails < ActiveRecord::Migration[7.0]
       t.string  :email,                null: false
       t.boolean :primary_email_record, null: false, default: false
 
+      # Confirmable columns — required by :multi_email_confirmable which
+      # includes devise :confirmable into each email record.
+      t.string   :confirmation_token
+      t.datetime :confirmed_at
+      t.datetime :confirmation_sent_at
+      t.string   :unconfirmed_email
+
       t.timestamps
     end
 
     add_index :multi_email_user_emails, :email,                                   unique: true
+    add_index :multi_email_user_emails, :confirmation_token,
+              name: 'index_multi_email_user_emails_on_confirmation_token', unique: true
     add_index :multi_email_user_emails, [:multi_email_user_id, :primary_email_record],
               name: 'index_multi_email_user_emails_on_user_and_primary'
   end

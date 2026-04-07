@@ -225,9 +225,14 @@ ActiveRecord::Schema.define(version: 2026_04_01_000002) do
     t.integer "multi_email_user_id", null: false
     t.string  "email",               null: false
     t.boolean "primary_email_record", null: false, default: false
+    t.string  "confirmation_token"
+    t.datetime "confirmed_at"
+    t.datetime "confirmation_sent_at"
+    t.string  "unconfirmed_email"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.index ["email"], name: "index_multi_email_user_emails_on_email", unique: true
+    t.index ["confirmation_token"], name: "index_multi_email_user_emails_on_confirmation_token", unique: true
     t.index ["multi_email_user_id", "primary_email_record"],
             name: "index_multi_email_user_emails_on_user_and_primary"
   end

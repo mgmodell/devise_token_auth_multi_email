@@ -115,11 +115,13 @@ module DeviseTokenAuth
         elsif params['omniauth_window_type'] || params['auth_origin_url']
           # Fallback: params may arrive as URL query string when the session
           # is not reliably forwarded through a 307 redirect chain (Rails 7.2+).
-          # Build an explicit allowlist: known OmniAuth routing params plus any
-          # application-specific params that Devise permits for sign_up (e.g.
-          # custom whitelisted attributes like favorite_color). This avoids both
-          # a fixed-only slice (which would silently drop app-defined params) and
-          # an unrestricted permit! (which would admit arbitrary injected keys).
+          # Pre-set @_omniauth_params to {} BEFORE calling params_for_resource to
+          # break a potential recursive loop:
+          #   omniauth_params → params_for_resource → devise_parameter_sanitizer
+          #   → resource_class → omniauth_params (still computing!) → loop
+          # With @_omniauth_params = {} set early, any re-entrant call returns {}
+          # and resource_class falls back to params['resource_class'] directly.
+          @_omniauth_params = {}
           omniauth_known_keys = %w[omniauth_window_type auth_origin_url resource_class
                                    origin namespace_name config_name]
           begin
