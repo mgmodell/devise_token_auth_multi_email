@@ -72,6 +72,7 @@ if ENV['MONGOID_VERSION']
   end
 
   gem 'mongoid-locker', '~> 2.0'
+  gem 'database_cleaner-mongoid'
 end
 
 gem "rails", "~> 7"

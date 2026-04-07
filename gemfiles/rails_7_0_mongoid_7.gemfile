@@ -19,6 +19,7 @@ group :development, :test do
   gem "rack-cors"
   gem "thor", "~> 1.2"
   gem "database_cleaner"
+  gem "database_cleaner-mongoid"
   gem "factory_bot_rails"
   gem "faker", "~> 3.2"
   gem "faraday-retry"
