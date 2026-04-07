@@ -20,18 +20,8 @@ module DeviseTokenAuth::Concerns::ResourceFinder
   end
 
   def find_resource(field, value)
-    # Memoize once: truthy = multi_email association name key, false = not in use.
-    # defined?() returns a String when the expression is valid, nil otherwise.
-    unless defined?(@@multi_email_field)
-      @@multi_email_field = if defined?(Devise::MultiEmail.emails_association_name)
-                              Devise::MultiEmail.emails_association_name.to_s.singularize.to_sym
-                            else
-                              false
-                            end
-    end
-
-    @resource = if :email == field && @@multi_email_field
-                  # devise-multi_email adds find_by_email to the parent model.
+    @resource = if :email == field && resource_class.respond_to?(:find_by_email)
+                  # devise-multi_email adds find_by_email to parent models only.
                   resource_class.find_by_email value
                 elsif database_adapter&.include?('mysql')
                   # fix for mysql default case insensitivity
