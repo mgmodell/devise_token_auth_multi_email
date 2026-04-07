@@ -1,8 +1,11 @@
 # frozen_string_literal: true
 
 # Email record for MultiEmailUser.  Each row represents one email address
-# that belongs to a MultiEmailUser; the primary_email_record column marks the
-# address currently used for authentication.
+# that belongs to a MultiEmailUser.
+#
+# The `primary` boolean column is required by the devise-multi_email gem:
+# it generates `primary?` and `primary=` via ActiveRecord from that column name,
+# which ParentModelManager calls to find/set the primary email address.
 #
 # Devise::MultiEmail::EmailModelExtensions (and EmailValidatable) are included
 # automatically into this class by MultiEmailUser's ParentModelExtensions when

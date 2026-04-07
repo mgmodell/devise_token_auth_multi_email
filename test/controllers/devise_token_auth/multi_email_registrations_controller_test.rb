@@ -95,7 +95,7 @@ class MultiEmailRegistrationsControllerTest < ActionDispatch::IntegrationTest
 
       test 'primary email record is marked correctly' do
         email_record = @resource.emails.first
-        assert email_record.primary_email_record
+        assert email_record.primary?
       end
 
       test 'the email record stores the registered email' do
