@@ -20,15 +20,8 @@ module DeviseTokenAuth::Concerns::ResourceFinder
   end
 
   def find_resource(field, value)
-    @@multi_email_field = if( defined? @@multi_email_field )
-      @@multi_email_field = if( defined?( Devise::MultiEmail.emails_association_name ).nil? )
-                              Devise::MultiEmail.emails_association_name.to_s.singularize.to_sym
-                            else
-                              false
-                            end
-                          end
-
-    @resource = if :email == field && !@@multi_email_field
+    @resource = if :email == field && resource_class.respond_to?(:find_by_email)
+                  # devise-multi_email adds find_by_email to parent models only.
                   resource_class.find_by_email value
                 elsif database_adapter&.include?('mysql')
                   # fix for mysql default case insensitivity
