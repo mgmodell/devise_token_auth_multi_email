@@ -196,7 +196,6 @@ ActiveRecord::Schema.define(version: 2026_04_01_000002) do
   end
 
   create_table "multi_email_users", force: :cascade do |t|
-    t.string "email"
     t.string "encrypted_password", default: "", null: false
     t.string "reset_password_token"
     t.datetime "reset_password_sent_at"
@@ -215,7 +214,6 @@ ActiveRecord::Schema.define(version: 2026_04_01_000002) do
     t.text "tokens"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.index ["email"], name: "index_multi_email_users_on_email"
     t.index ["uid", "provider"], name: "index_multi_email_users_on_uid_and_provider", unique: true
     t.index ["reset_password_token"], name: "index_multi_email_users_on_reset_password_token", unique: true
     t.index ["confirmation_token"], name: "index_multi_email_users_on_confirmation_token", unique: true

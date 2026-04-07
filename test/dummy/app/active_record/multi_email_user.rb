@@ -33,5 +33,13 @@ class MultiEmailUser < ActiveRecord::Base
     # 3. DeviseTokenAuth concern — sees devise_modules already defined, skips
     #    its own devise call, and adds token management, OmniAuth callbacks, etc.
     include DeviseTokenAuth::Concerns::User
+
+    # 4. Include the delegated `email` method in JSON serialization so that API
+    #    responses include the primary email even though there is no email column
+    #    on this table (email lives in the multi_email_user_emails table).
+    def as_json(options = {})
+      options[:methods] = Array(options[:methods]) | [:email]
+      super(options)
+    end
   end
 end

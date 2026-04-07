@@ -6,7 +6,6 @@ class DeviseTokenAuthCreateMultiEmailUsers < ActiveRecord::Migration[7.0]
   def change
     create_table(:multi_email_users) do |t|
       ## Database authenticatable
-      t.string :email
       t.string :encrypted_password, null: false, default: ''
 
       ## Recoverable
@@ -43,7 +42,6 @@ class DeviseTokenAuthCreateMultiEmailUsers < ActiveRecord::Migration[7.0]
       t.timestamps
     end
 
-    add_index :multi_email_users, :email
     add_index :multi_email_users, [:uid, :provider],     unique: true
     add_index :multi_email_users, :reset_password_token, unique: true
     add_index :multi_email_users, :confirmation_token,   unique: true
