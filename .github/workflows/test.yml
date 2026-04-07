@@ -28,6 +28,8 @@ jobs:
         include:
           - ruby: '3.0'
             gemfile: gemfiles/rails_7_0.gemfile
+            db: sqlite
+            devise-token-auth-orm: active_record
           - ruby: '3.0'
             gemfile: gemfiles/rails_7_0_mongoid_7.gemfile
             devise-token-auth-orm: mongoid

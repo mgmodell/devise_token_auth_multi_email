@@ -82,12 +82,51 @@ module DeviseTokenAuth
 
         # Omniauth currently removes omniauth.params during mocked requests
         # see also: https://github.com/intridea/omniauth/pull/812
+        #
+        # In Rails 7.2+, follow_redirect! preserves the POST method for 307
+        # redirects.  This means the router's 307 to /omniauth/:provider is
+        # followed as a POST, which OmniAuth handles in mock_request_call.
+        # However the session cookie written by that Rack response is not
+        # reliably forwarded to the subsequent GET /omniauth/:provider/callback
+        # request in integration tests, so session['omniauth.params'] is nil
+        # when mock_callback_call runs.
+        #
+        # Fix: also encode the omniauth params as a query string in the
+        # callback redirect URL (mock_request_call) so they are available in
+        # request.params as a fallback (mock_callback_call).
         OmniAuth::Strategy.class_eval do
+          def mock_request_call
+            setup_phase
+            @env['omniauth.origin'] = request.params['origin']
+            @env['omniauth.origin'] = nil if env['omniauth.origin'] == ''
+            omniauth_params = request.params.except('authenticity_token')
+            session['omniauth.params'] = omniauth_params
+            # Set env now so redirect_to_failure (failure path) and
+            # mock_callback_call (success path) both have access to params.
+            @env['omniauth.params'] = omniauth_params
+            mocked_auth = OmniAuth.mock_auth_for(name.to_s)
+            if mocked_auth.is_a?(Symbol)
+              fail!(mocked_auth)
+            else
+              @env['omniauth.auth'] = mocked_auth
+              # Encode params in the callback URL so they survive even when the
+              # session cookie is not forwarded through the redirect chain.
+              redirect_target = omniauth_params.any? ?
+                "#{callback_url}?#{omniauth_params.to_query}" :
+                callback_url
+              redirect redirect_target
+            end
+          end
+
           def mock_callback_call
             setup_phase
             @env['omniauth.origin'] = session.delete('omniauth.origin')
             @env['omniauth.origin'] = nil if env['omniauth.origin'] == ''
-            @env['omniauth.params'] = session.delete('omniauth.params') || {}
+            # Prefer the session (Rails ≤7.1) but fall back to request params
+            # (Rails 7.2+ where the session cookie may not survive the redirect).
+            @env['omniauth.params'] = session.delete('omniauth.params').presence ||
+                                      request.params.except('authenticity_token') ||
+                                      {}
             mocked_auth = OmniAuth.mock_auth_for(name.to_s)
             if mocked_auth.is_a?(Symbol)
               fail!(mocked_auth)
