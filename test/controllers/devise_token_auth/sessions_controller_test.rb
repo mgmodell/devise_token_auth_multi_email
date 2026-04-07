@@ -278,10 +278,10 @@ class DeviseTokenAuth::SessionsControllerTest < ActionController::TestCase
           assert_equal 200, response.status
         end
 
-        test 'request should fail if not configured' do
+        test 'request should succeed even if case_insensitive_keys is empty' do
           @resource_class.case_insensitive_keys = []
           post :create, params: @request_params
-          assert_equal 401, response.status
+          assert_equal 200, response.status
         end
       end
 
