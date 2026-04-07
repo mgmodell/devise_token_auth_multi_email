@@ -3,7 +3,7 @@
 require 'test_helper'
 
 # Tests that verify devise_token_auth works correctly with a **standard** model —
-# one that does NOT include Devise::MultiEmail::ParentModelConcern.
+# one that does NOT use devise-multi_email (i.e. does NOT have multi_email_association).
 #
 # Standard models get the email uniqueness validation directly from
 # DeviseTokenAuth::Concerns::UserOmniauthCallbacks, regardless of whether the
@@ -14,7 +14,7 @@ require 'test_helper'
 #   • An OAuth user's email can be re-used for an email-provider registration
 #     because uniqueness is scoped to provider.
 class StandardUserRegistrationsControllerTest < ActionDispatch::IntegrationTest
-  describe 'Standard User (without Devise::MultiEmail::ParentModelConcern)' do
+  describe 'Standard User (without multi_email_authenticatable)' do
     def registration_params(email: nil)
       {
         email:                 email || Faker::Internet.unique.email,
@@ -42,9 +42,9 @@ class StandardUserRegistrationsControllerTest < ActionDispatch::IntegrationTest
       end
 
       test 'multi_email model does NOT carry the concern uniqueness validator' do
-        # MultiEmailUser includes Devise::MultiEmail::ParentModelConcern, so the
-        # concern deliberately skips adding this validator (the emails table
-        # enforces uniqueness instead).
+        # MultiEmailUser uses :multi_email_authenticatable so it has
+        # multi_email_association — the concern skips adding the uniqueness
+        # validator (the emails table enforces uniqueness instead).
         refute MultiEmailUser.validators_on(:email).any? { |v|
           v.is_a?(ActiveRecord::Validations::UniquenessValidator)
         }, 'Expected NO UniquenessValidator on MultiEmailUser#email'

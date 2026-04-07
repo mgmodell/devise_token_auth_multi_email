@@ -8,13 +8,12 @@ module DeviseTokenAuth::Concerns::UserOmniauthCallbacks
     validates :email, :devise_token_auth_email => true, allow_nil: true, allow_blank: true, if: lambda { uid_and_provider_defined? && email_provider? }
     validates_presence_of :uid, if: lambda { uid_and_provider_defined? && !email_provider? }
 
-    # Only skip the uniqueness validation for models that have explicitly opted
-    # into devise-multi_email (i.e. include Devise::MultiEmail::ParentModelConcern).
-    # Those models manage email uniqueness via a separate emails association/table.
-    # Standard models that don't include the concern still need this validation.
-    _multi_email_model = defined?(Devise::MultiEmail::ParentModelConcern) &&
-                         ancestors.include?(Devise::MultiEmail::ParentModelConcern)
-    unless _multi_email_model
+    # Only skip the uniqueness validation for models that use devise-multi_email
+    # (detected by the presence of the multi_email_association class method, which
+    # Devise::MultiEmail::ParentModelExtensions adds via :multi_email_authenticatable).
+    # Standard models always validate; multi_email models manage uniqueness via the
+    # emails association table instead.
+    unless Gem.loaded_specs['devise-multi_email'] && respond_to?(:multi_email_association)
       # only validate unique emails among email registration users
       validates :email, uniqueness: { case_sensitive: false, scope: :provider }, on: :create, if: lambda { uid_and_provider_defined? && email_provider? }
     end

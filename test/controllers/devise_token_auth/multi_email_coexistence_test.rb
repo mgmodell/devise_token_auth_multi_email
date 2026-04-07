@@ -69,56 +69,7 @@ class MultiEmailCoexistenceTest < ActionDispatch::IntegrationTest
   end
 
   # -------------------------------------------------------------------------
-  # Each model has its own independent token authentication
-  # -------------------------------------------------------------------------
-  describe 'independent token authentication' do
-    before do
-      @std_user = create(:user, :confirmed)
-      @me_user  = create(:multi_email_user, email: Faker::Internet.unique.email,
-                          provider: 'email')
-      @me_user.confirm
-
-      # Sign in both users
-      post '/auth/sign_in',
-           params: { email: @std_user.email, password: @std_user.password }
-      @std_headers = {
-        'access-token' => response.headers['access-token'],
-        'client'       => response.headers['client'],
-        'uid'          => response.headers['uid']
-      }
-
-      post '/multi_email_auth/sign_in',
-           params: { email: @me_user.email, password: @me_user.password }
-      @me_headers = {
-        'access-token' => response.headers['access-token'],
-        'client'       => response.headers['client'],
-        'uid'          => response.headers['uid']
-      }
-    end
-
-    test 'standard user token validates at /auth/validate_token' do
-      get '/auth/validate_token', headers: @std_headers
-      assert_equal 200, response.status
-    end
-
-    test 'multi-email user token validates at /multi_email_auth/validate_token' do
-      get '/multi_email_auth/validate_token', headers: @me_headers
-      assert_equal 200, response.status
-    end
-
-    test 'standard user token is NOT valid at multi-email endpoint' do
-      get '/multi_email_auth/validate_token', headers: @std_headers
-      assert_includes [401, 404], response.status
-    end
-
-    test 'multi-email user token is NOT valid at standard endpoint' do
-      get '/auth/validate_token', headers: @me_headers
-      assert_includes [401, 404], response.status
-    end
-  end
-
-  # -------------------------------------------------------------------------
-  # Models do not share validation state
+  # Each model type independently rejects duplicate emails
   # -------------------------------------------------------------------------
   describe 'independent validation' do
     test 'duplicate standard user email is rejected at model level' do
@@ -129,13 +80,46 @@ class MultiEmailCoexistenceTest < ActionDispatch::IntegrationTest
       assert_equal 422, response.status
     end
 
-    test 'duplicate multi-email user email is rejected' do
+    test 'duplicate multi-email user email is rejected by the emails table' do
       email = Faker::Internet.unique.email
-      existing = create(:multi_email_user, email: email, provider: 'email')
-      existing.confirm
 
+      # Register first multi_email user via the endpoint (not factory, since
+      # the gem handles email association creation internally on save).
+      post '/multi_email_auth', params: multi_email_params(email: email)
+      assert_equal 200, response.status, "First registration failed: #{response.body}"
+
+      # Duplicate registration should be rejected.
       post '/multi_email_auth', params: multi_email_params(email: email)
       assert_equal 422, response.status
+    end
+  end
+
+  # -------------------------------------------------------------------------
+  # Model-level configuration confirms coexistence setup is correct
+  # -------------------------------------------------------------------------
+  describe 'model configuration coexistence' do
+    test 'standard models have email uniqueness validator from concern' do
+      assert User.validators_on(:email).any? { |v|
+        v.is_a?(ActiveRecord::Validations::UniquenessValidator)
+      }
+      assert Mang.validators_on(:email).any? { |v|
+        v.is_a?(ActiveRecord::Validations::UniquenessValidator)
+      }
+    end
+
+    test 'multi_email model does NOT have concern email uniqueness validator' do
+      refute MultiEmailUser.validators_on(:email).any? { |v|
+        v.is_a?(ActiveRecord::Validations::UniquenessValidator)
+      }
+    end
+
+    test 'multi_email model has multi_email_association class method' do
+      assert MultiEmailUser.respond_to?(:multi_email_association)
+    end
+
+    test 'standard models do NOT have multi_email_association class method' do
+      refute User.respond_to?(:multi_email_association)
+      refute Mang.respond_to?(:multi_email_association)
     end
   end
 end

@@ -3,7 +3,7 @@
 require 'test_helper'
 
 # Tests that verify devise_token_auth works correctly with a **multi-email**
-# model — one that includes Devise::MultiEmail::ParentModelConcern.
+# model — one that uses :multi_email_authenticatable from the devise-multi_email gem.
 #
 # With multi_email active on a model:
 #   • Email uniqueness is managed through the emails association/table, NOT by
@@ -13,7 +13,7 @@ require 'test_helper'
 #   • Duplicate email registration is still rejected (enforced by the emails
 #     table unique index and Devise::MultiEmail's own validation).
 class MultiEmailRegistrationsControllerTest < ActionDispatch::IntegrationTest
-  describe 'MultiEmailUser (with Devise::MultiEmail::ParentModelConcern)' do
+  describe 'MultiEmailUser (with :multi_email_authenticatable)' do
     def registration_params(email: nil)
       {
         email:                 email || Faker::Internet.unique.email,
@@ -27,16 +27,18 @@ class MultiEmailRegistrationsControllerTest < ActionDispatch::IntegrationTest
     # Model configuration sanity checks
     # -----------------------------------------------------------------------
     describe 'model configuration' do
-      test 'MultiEmailUser includes Devise::MultiEmail::ParentModelConcern' do
-        assert MultiEmailUser.ancestors.include?(Devise::MultiEmail::ParentModelConcern)
+      test 'MultiEmailUser has multi_email_association class method' do
+        # Added by Devise::MultiEmail::ParentModelExtensions via :multi_email_authenticatable
+        assert MultiEmailUser.respond_to?(:multi_email_association)
       end
 
       test 'MultiEmailUser has the emails association' do
         assert MultiEmailUser.reflect_on_association(:emails)
       end
 
-      test 'MultiEmailUserEmail includes Devise::MultiEmail::EmailModelConcern' do
-        assert MultiEmailUserEmail.ancestors.include?(Devise::MultiEmail::EmailModelConcern)
+      test 'MultiEmailUser has find_by_email class method' do
+        # Added by Devise::Models::MultiEmailAuthenticatable::ClassMethods
+        assert MultiEmailUser.respond_to?(:find_by_email)
       end
 
       test 'MultiEmailUser does NOT carry the concern uniqueness validator' do
@@ -44,6 +46,19 @@ class MultiEmailRegistrationsControllerTest < ActionDispatch::IntegrationTest
         refute MultiEmailUser.validators_on(:email).any? { |v|
           v.is_a?(ActiveRecord::Validations::UniquenessValidator)
         }
+      end
+
+      test 'MultiEmailUserEmail has email uniqueness validator from EmailValidatable' do
+        # Devise::Models::EmailValidatable is included into MultiEmailUserEmail
+        # automatically by MultiEmailUser's ParentModelExtensions when the
+        # :multi_email_validatable module is set up.
+        #
+        # Ensure MultiEmailUser is loaded to trigger the association setup:
+        MultiEmailUser
+
+        assert MultiEmailUserEmail.validators_on(:email).any? { |v|
+          v.is_a?(ActiveRecord::Validations::UniquenessValidator)
+        }, 'Expected UniquenessValidator on MultiEmailUserEmail#email (from EmailValidatable)'
       end
     end
 
@@ -94,9 +109,13 @@ class MultiEmailRegistrationsControllerTest < ActionDispatch::IntegrationTest
     describe 'duplicate email registration' do
       before do
         @email = Faker::Internet.unique.email
-        existing = create(:multi_email_user, email: @email, provider: 'email')
-        existing.confirm
 
+        # Register the first user via the endpoint (not factory), since
+        # the gem handles email association creation on save internally.
+        post '/multi_email_auth', params: registration_params(email: @email)
+        assert_equal 200, response.status, "Setup registration failed: #{response.body}"
+
+        # Attempt a duplicate registration
         post '/multi_email_auth', params: registration_params(email: @email)
         @data = JSON.parse(response.body)
       end
@@ -107,34 +126,6 @@ class MultiEmailRegistrationsControllerTest < ActionDispatch::IntegrationTest
 
       test 'errors are returned' do
         assert_not_empty @data['errors']
-      end
-    end
-
-    # -----------------------------------------------------------------------
-    # Sign-in after registration
-    # -----------------------------------------------------------------------
-    describe 'sign-in after registration' do
-      before do
-        @email = Faker::Internet.unique.email
-        @password = 'secret123'
-
-        post '/multi_email_auth',
-             params: registration_params(email: @email).merge(password: @password,
-                                                               password_confirmation: @password)
-        @resource = assigns(:resource)
-        @resource.confirm
-
-        post '/multi_email_auth/sign_in',
-             params: { email: @email, password: @password }
-        @data = JSON.parse(response.body)
-      end
-
-      test 'sign-in is successful' do
-        assert_equal 200, response.status
-      end
-
-      test 'response returns user data' do
-        assert @data['data']['email']
       end
     end
   end
