@@ -48,11 +48,15 @@ class ActiveSupport::TestCase
     ActiveRecord::Migration.check_pending!
   end
 
-  strategies = { active_record: :transaction,
-                 mongoid: :deletion }
-  DatabaseCleaner.strategy = strategies[DEVISE_TOKEN_AUTH_ORM]
-  setup { DatabaseCleaner.start }
-  teardown { DatabaseCleaner.clean }
+  if DEVISE_TOKEN_AUTH_ORM == :active_record
+    DatabaseCleaner.strategy = :transaction
+    setup { DatabaseCleaner.start }
+    teardown { DatabaseCleaner.clean }
+  else
+    DatabaseCleaner[:mongoid].strategy = :deletion
+    setup { DatabaseCleaner[:mongoid].start }
+    teardown { DatabaseCleaner[:mongoid].clean }
+  end
 
   # Add more helper methods to be used by all tests here...
 

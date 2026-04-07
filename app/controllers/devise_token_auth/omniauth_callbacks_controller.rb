@@ -23,7 +23,16 @@ module DeviseTokenAuth
       session['dta.omniauth.auth'] = request.env['omniauth.auth'].except('extra')
       session['dta.omniauth.params'] = request.env['omniauth.params']
 
-      redirect_to redirect_route, {status: 307}.merge(redirect_options)
+      # Also encode omniauth params in the redirect URL so they survive as
+      # request params in omniauth_success even when the session cookie is
+      # not reliably forwarded through a 307 redirect chain (e.g. Rails 7.2+
+      # integration tests where follow_redirect! preserves the POST method).
+      omniauth_env_params = request.env['omniauth.params'].presence
+      redirect_url = omniauth_env_params ?
+        DeviseTokenAuth::Url.generate(redirect_route, omniauth_env_params) :
+        redirect_route
+
+      redirect_to redirect_url, {status: 307}.merge(redirect_options)
     end
 
     def get_redirect_route(devise_mapping)
@@ -102,13 +111,30 @@ module DeviseTokenAuth
         if request.env['omniauth.params'] && request.env['omniauth.params'].any?
           @_omniauth_params = request.env['omniauth.params']
         elsif session['dta.omniauth.params'] && session['dta.omniauth.params'].any?
-          @_omniauth_params ||= session.delete('dta.omniauth.params')
-          @_omniauth_params
-        elsif params['omniauth_window_type']
-          @_omniauth_params = params.slice('omniauth_window_type', 'auth_origin_url', 'resource_class', 'origin')
+          @_omniauth_params = session['dta.omniauth.params']
+        elsif params['omniauth_window_type'] || params['auth_origin_url']
+          # Fallback: params may arrive as URL query string when the session
+          # is not reliably forwarded through a 307 redirect chain (Rails 7.2+).
+          # Pre-set @_omniauth_params to {} BEFORE calling params_for_resource to
+          # break a potential recursive loop:
+          #   omniauth_params → params_for_resource → devise_parameter_sanitizer
+          #   → resource_class → omniauth_params (still computing!) → loop
+          # With @_omniauth_params = {} set early, any re-entrant call returns {}
+          # and resource_class falls back to params['resource_class'] directly.
+          @_omniauth_params = {}
+          omniauth_known_keys = %w[omniauth_window_type auth_origin_url resource_class
+                                   origin namespace_name config_name]
+          begin
+            sign_up_keys = params_for_resource(:sign_up).map(&:to_s)
+          rescue NoMethodError, TypeError
+            sign_up_keys = []
+          end
+          @_omniauth_params = params.permit(*omniauth_known_keys, *sign_up_keys)
         else
           @_omniauth_params = {}
         end
+        # Always clean up the session key, regardless of which branch was taken.
+        session.delete('dta.omniauth.params')
       end
       @_omniauth_params
     end

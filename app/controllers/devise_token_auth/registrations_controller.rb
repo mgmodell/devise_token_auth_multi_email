@@ -40,27 +40,33 @@ module DeviseTokenAuth
         @resource.skip_confirmation_notification!
       end
 
-      if @resource.save
-        yield @resource if block_given?
+      begin
+        if @resource.save
+          yield @resource if block_given?
 
-        unless @resource.confirmed?
-          # user will require email authentication
-          @resource.send_confirmation_instructions({
-            client_config: params[:config_name],
-            redirect_url: @redirect_url
-          })
+          unless @resource.confirmed?
+            # user will require email authentication
+            @resource.send_confirmation_instructions({
+              client_config: params[:config_name],
+              redirect_url: @redirect_url
+            })
+          end
+
+          if active_for_authentication?
+            # email auth has been bypassed, authenticate user
+            @token = @resource.create_token
+            @resource.save!
+            update_auth_header
+          end
+
+          render_create_success
+        else
+          clean_up_passwords @resource
+          render_create_error
         end
-
-        if active_for_authentication?
-          # email auth has been bypassed, authenticate user
-          @token = @resource.create_token
-          @resource.save!
-          update_auth_header
-        end
-
-        render_create_success
-      else
+      rescue ActiveRecord::RecordNotUnique
         clean_up_passwords @resource
+        @resource.errors.add(:email, :taken)
         render_create_error
       end
     end

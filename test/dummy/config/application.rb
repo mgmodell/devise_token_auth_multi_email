@@ -39,7 +39,12 @@ module Dummy
     config.autoload_paths << Rails.root.join('lib')
     config.autoload_paths += ["#{config.root}/app/#{DEVISE_TOKEN_AUTH_ORM}"]
 
-    config.active_record.legacy_connection_handling = false if Rails::VERSION::MAJOR == 6
+    # legacy_connection_handling was deprecated in Rails 7.0/7.1 and removed in Rails 7.2+
+    # Only applies when using ActiveRecord (not when using Mongoid).
+    if DEVISE_TOKEN_AUTH_ORM == :active_record &&
+       !(Rails::VERSION::MAJOR > 7 || (Rails::VERSION::MAJOR == 7 && Rails::VERSION::MINOR >= 2))
+      config.active_record.legacy_connection_handling = false
+    end
 
     if DEVISE_TOKEN_AUTH_ORM == :mongoid
       Mongoid.configure do |config|
