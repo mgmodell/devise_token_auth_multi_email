@@ -24,8 +24,11 @@ Rails.application.routes.draw do
 
   # MultiEmailUser uses devise-multi_email to manage email addresses via a
   # separate emails association rather than a single email column.
-  mount_devise_token_auth_for 'MultiEmailUser', at: 'multi_email_auth',
-                              skip: [:omniauth_callbacks]
+  # Only mount in ActiveRecord mode — the model's devise setup is AR-only.
+  if DEVISE_TOKEN_AUTH_ORM == :active_record
+    mount_devise_token_auth_for 'MultiEmailUser', at: 'multi_email_auth',
+                                skip: [:omniauth_callbacks]
+  end
 
   # test namespacing
   namespace :api do

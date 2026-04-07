@@ -13,6 +13,11 @@ require 'test_helper'
 #     constraint exception reaching PostgreSQL that would abort the transaction).
 #   • An OAuth user's email can be re-used for an email-provider registration
 #     because uniqueness is scoped to provider.
+#
+# These tests are ActiveRecord-specific because they validate AR-level validators
+# and the MultiEmailUser ActiveRecord model (used for contrast tests).
+return unless DEVISE_TOKEN_AUTH_ORM == :active_record
+
 class StandardUserRegistrationsControllerTest < ActionDispatch::IntegrationTest
   describe 'Standard User (without multi_email_authenticatable)' do
     def registration_params(email: nil)

@@ -12,6 +12,11 @@ require 'test_helper'
 #   • The user's primary email is accessible via the emails association.
 #   • Duplicate email registration is still rejected (enforced by the emails
 #     table unique index and Devise::MultiEmail's own validation).
+#
+# These tests are ActiveRecord-only — the MultiEmailUser model and its
+# devise-multi_email setup are not available in Mongoid runs.
+return unless DEVISE_TOKEN_AUTH_ORM == :active_record
+
 class MultiEmailRegistrationsControllerTest < ActionDispatch::IntegrationTest
   describe 'MultiEmailUser (with :multi_email_authenticatable)' do
     def registration_params(email: nil)

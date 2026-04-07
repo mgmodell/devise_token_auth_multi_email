@@ -11,6 +11,11 @@ require 'test_helper'
 #     live in different tables so there is no cross-model constraint conflict).
 #   • Token authentication works independently for each model type.
 #   • Session isolation: signing in on one model doesn't affect another.
+#
+# These tests are ActiveRecord-only — the MultiEmailUser model and route are
+# not set up in Mongoid runs.
+return unless DEVISE_TOKEN_AUTH_ORM == :active_record
+
 class MultiEmailCoexistenceTest < ActionDispatch::IntegrationTest
   def standard_params(email: nil)
     {

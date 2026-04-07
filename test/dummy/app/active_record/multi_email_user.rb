@@ -18,12 +18,20 @@ class MultiEmailUser < ActiveRecord::Base
            class_name: 'MultiEmailUserEmail',
            dependent:  :destroy
 
-  # 2. multi_email devise modules — these include Devise::MultiEmail::ParentModelExtensions
-  #    which adds multi_email_association, find_by_email, and related helpers.
-  devise :multi_email_authenticatable, :registerable,
-         :recoverable, :multi_email_validatable, :multi_email_confirmable
+  # 2–3 only apply when running with ActiveRecord.  In Mongoid runs the
+  # activerecord gem is still bundled (so ActiveRecord::Base exists) but
+  # active_record/railtie is not required, which means devise-multi_email's
+  # AR-specific modules are not registered and calling `devise` would raise
+  # NoMethodError.  We guard here so the file can be safely autoloaded in
+  # Mongoid mode (Zeitwerk still gets a valid MultiEmailUser constant).
+  if DEVISE_TOKEN_AUTH_ORM == :active_record
+    # 2. multi_email devise modules — include Devise::MultiEmail::ParentModelExtensions
+    #    which adds multi_email_association, find_by_email, and related helpers.
+    devise :multi_email_authenticatable, :registerable,
+           :recoverable, :multi_email_validatable, :multi_email_confirmable
 
-  # 3. DeviseTokenAuth concern — sees devise_modules already defined, skips its
-  #    own devise call, and adds token management, OmniAuth callbacks, etc.
-  include DeviseTokenAuth::Concerns::User
+    # 3. DeviseTokenAuth concern — sees devise_modules already defined, skips
+    #    its own devise call, and adds token management, OmniAuth callbacks, etc.
+    include DeviseTokenAuth::Concerns::User
+  end
 end
