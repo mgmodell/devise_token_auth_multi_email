@@ -3,7 +3,7 @@
 class DeviseTokenAuthCreateMultiEmailUserEmails < ActiveRecord::Migration[7.0]
   def change
     create_table(:multi_email_user_emails) do |t|
-      t.references :multi_email_user, null: false, foreign_key: true
+      t.references :multi_email_user, null: false, foreign_key: true, type: :bigint
       t.string  :email,   null: false
       # devise-multi_email gem requires a column named `primary` (boolean).
       # The gem calls `email_record.primary?` and `email_record.primary = value`

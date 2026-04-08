@@ -83,7 +83,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_01_000002) do
   end
 
   create_table "multi_email_user_emails", force: :cascade do |t|
-    t.integer "multi_email_user_id", null: false
+    t.bigint "multi_email_user_id", null: false
     t.string "email", null: false
     t.boolean "primary", default: false, null: false
     t.string "confirmation_token"
