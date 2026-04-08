@@ -22,9 +22,9 @@ class DeviseTokenAuth::TokenFactoryTest < ActiveSupport::TestCase
         assert_equal(secure_string.size, 22)
         assert_match(token_regexp, secure_string)
 
-        SecureRandom.stub(:urlsafe_base64, secure_string) do
-          assert_equal(tf.secure_string, secure_string)
-        end
+        SecureRandom.stubs(:urlsafe_base64).returns(secure_string)
+        assert_equal(tf.secure_string, secure_string)
+        SecureRandom.unstub(:urlsafe_base64)
       end
 
       it '::client' do
@@ -35,9 +35,9 @@ class DeviseTokenAuth::TokenFactoryTest < ActiveSupport::TestCase
         assert_match(token_regexp, client)
 
         secure_string = tf.secure_string
-        tf.stub(:secure_string, secure_string) do
-          assert_equal(tf.client, secure_string)
-        end
+        tf.stubs(:secure_string).returns(secure_string)
+        assert_equal(tf.client, secure_string)
+        tf.unstub(:secure_string)
       end
 
       it '::token' do
@@ -49,9 +49,9 @@ class DeviseTokenAuth::TokenFactoryTest < ActiveSupport::TestCase
         assert_match(token_regexp, token)
 
         secure_string = tf.secure_string
-        tf.stub(:secure_string, secure_string) do
-          assert_equal(tf.token, secure_string)
-        end
+        tf.stubs(:secure_string).returns(secure_string)
+        assert_equal(tf.token, secure_string)
+        tf.unstub(:secure_string)
       end
 
       it '::token_hash(args)' do
@@ -84,12 +84,12 @@ class DeviseTokenAuth::TokenFactoryTest < ActiveSupport::TestCase
 
       it '::expiry(args)' do
         time = Time.now
-        Time.stub(:now, time) do
-          assert_equal(tf.expiry(lifespan), (time + lifespan).to_i)
+        Time.stubs(:now).returns(time)
+        assert_equal(tf.expiry(lifespan), (time + lifespan).to_i)
 
-          lifespan = nil
-          assert_equal(tf.expiry(lifespan), (time + DeviseTokenAuth.token_lifespan).to_i)
-        end
+        lifespan = nil
+        assert_equal(tf.expiry(lifespan), (time + DeviseTokenAuth.token_lifespan).to_i)
+        Time.unstub(:now)
       end
 
       it '::create' do
@@ -106,10 +106,10 @@ class DeviseTokenAuth::TokenFactoryTest < ActiveSupport::TestCase
         assert_equal(token.client, client)
 
         time = Time.now
-        Time.stub(:now, time) do
-          token = tf.create(lifespan: lifespan)
-          assert_equal(token.expiry, (time + lifespan).to_i)
-        end
+        Time.stubs(:now).returns(time)
+        token = tf.create(lifespan: lifespan)
+        assert_equal(token.expiry, (time + lifespan).to_i)
+        Time.unstub(:now)
 
         token = tf.create(cost: cost)
         token_cost = token_hash_cost_regexp.match(token.token_hash)[1].to_i

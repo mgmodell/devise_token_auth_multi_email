@@ -18,7 +18,11 @@ puts "\n==> DeviseTokenAuth.orm = #{DEVISE_TOKEN_AUTH_ORM.inspect}"
 
 require File.expand_path('dummy/config/environment', __dir__)
 require 'active_support/testing/autorun'
-require 'minitest/rails'
+# Replace minitest/rails with plain minitest to avoid SIGTRAP on Ruby 3.3.6/ARM64
+require 'minitest'
+require 'minitest/spec'
+require 'minitest/reporters'
+# Load mocha after minitest but before running tests
 require 'mocha/minitest'
 if DEVISE_TOKEN_AUTH_ORM == :active_record
   require 'database_cleaner'

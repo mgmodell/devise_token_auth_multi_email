@@ -21,14 +21,10 @@ load 'rails/tasks/engine.rake'
 
 Bundler::GemHelper.install_tasks
 
-require 'rake/testtask'
-
-Rake::TestTask.new(:test) do |t|
-  t.libs << 'lib'
-  t.libs << 'test'
-  t.pattern = 'test/**/*_test.rb'
-  t.verbose = false
-  t.warning = false
+# Custom test task to avoid minitest-rails SIGTRAP issue  
+desc 'Run all tests'
+task :test do
+  sh 'find test -name "*_test.rb" -exec bundle exec ruby -I lib:test {} \;'
 end
 
 task default: :test
