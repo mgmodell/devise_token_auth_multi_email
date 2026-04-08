@@ -32,7 +32,11 @@ module DeviseTokenAuth
         DeviseTokenAuth::Url.generate(redirect_route, omniauth_env_params) :
         redirect_route
 
-      redirect_to redirect_url, {status: 307}.merge(redirect_options)
+      # Use 302/303 so the callback is performed as a GET and params/session
+      # survive reliably across the redirect chain in Rails integration tests.
+      # 303 is semantically "see other" after a POST; 302 is also widely used.
+      # Suggested by Claude Sonnet 4
+      redirect_to redirect_url, { status: 303 }.merge(redirect_options)
     end
 
     def get_redirect_route(devise_mapping)
