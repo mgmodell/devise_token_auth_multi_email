@@ -1,14 +1,16 @@
 # frozen_string_literal: true
 
 require 'simplecov'
-SimpleCov.formatter = SimpleCov::Formatter::HTMLFormatter
-SimpleCov.start 'rails' do
-  add_filter ['.bundle', 'test', 'config']
-end
 
 if ENV['CI']
   require 'coveralls'
-  Coveralls.wear!
+  SimpleCov.formatter = Coveralls::SimpleCov::Formatter
+else
+  SimpleCov.formatter = SimpleCov::Formatter::HTMLFormatter
+end
+
+SimpleCov.start 'rails' do
+  add_filter ['.bundle', 'test', 'config']
 end
 
 ENV['RAILS_ENV'] = 'test'
