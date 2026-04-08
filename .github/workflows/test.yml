@@ -117,6 +117,7 @@ jobs:
     needs: test
     if: always()
     runs-on: ubuntu-latest
+    environment: test
     permissions: {}
     steps:
       - name: Notify Coveralls that all parallel jobs are done
