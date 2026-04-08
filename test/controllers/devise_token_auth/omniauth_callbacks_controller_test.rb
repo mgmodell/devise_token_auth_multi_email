@@ -16,9 +16,11 @@ class OmniauthTest < ActionDispatch::IntegrationTest
     @redirect_url = 'https://ng-token-auth.dev/'
   end
 
+  # Suggested by GPT-5.2 as a more tolerant alternative to the above regex, which was brittle and failed when the JSON data contained certain characters.
   def get_parsed_data_json
-    encoded_json_data = @response.body.match(/var data \= JSON.parse\(decodeURIComponent\(\'(.+)\'\)\)\;/)[1]
-    JSON.parse(CGI.unescape(encoded_json_data))
+    m = response.body.match(/var\s+data\s*=\s*JSON\.parse\(decodeURIComponent\(['"](.+?)['"]\)\)/m)
+    raise "Could not find encoded data payload in response body" unless m
+    JSON.parse(CGI.unescape(m[1]))
   end
 
   describe 'success callback' do
