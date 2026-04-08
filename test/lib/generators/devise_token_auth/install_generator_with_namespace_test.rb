@@ -6,7 +6,7 @@ require 'generators/devise_token_auth/install_generator' if DEVISE_TOKEN_AUTH_OR
 require 'generators/devise_token_auth/install_mongoid_generator' if DEVISE_TOKEN_AUTH_ORM == :mongoid
 
 module DeviseTokenAuth
-  class InstallGeneratorTest < Rails::Generators::TestCase
+  class InstallGeneratorWithNamespaceTest < Rails::Generators::TestCase
     tests InstallGenerator        if DEVISE_TOKEN_AUTH_ORM == :active_record
     tests InstallMongoidGenerator if DEVISE_TOKEN_AUTH_ORM == :mongoid
     destination Rails.root.join('tmp/generators')

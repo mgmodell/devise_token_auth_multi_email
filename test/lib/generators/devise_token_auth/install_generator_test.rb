@@ -213,5 +213,65 @@ module DeviseTokenAuth
         end
       end
     end
+
+    describe 'rails api application controller' do
+      setup :prepare_destination
+
+      before do
+        @dir = File.join(destination_root, 'app', 'controllers')
+        @fname = File.join(@dir, 'application_controller.rb')
+        FileUtils.mkdir_p(@dir)
+
+        File.open(@fname, 'w') do |f|
+          f.write <<-RUBY
+            class ApplicationController < ActionController::API
+              def whatever
+                'whatever'
+              end
+            end
+          RUBY
+        end
+
+        run_generator
+      end
+
+      test 'controller concern is appended to rails api application controller' do
+        assert_file 'app/controllers/application_controller.rb' do |controller|
+          assert_match(/include DeviseTokenAuth::Concerns::SetUserByToken/, controller)
+        end
+      end
+
+      test 'subsequent runs do not modify rails api application controller' do
+        run_generator
+        assert_file 'app/controllers/application_controller.rb' do |controller|
+          matches = controller.scan(/include DeviseTokenAuth::Concerns::SetUserByToken/m).size
+          assert_equal 1, matches
+        end
+      end
+    end
+
+    describe 'missing application controller' do
+      setup :prepare_destination
+
+      before do
+        run_generator
+      end
+
+      test 'generator does not raise when application_controller.rb is absent' do
+        assert_no_file 'app/controllers/application_controller.rb'
+      end
+    end
+
+    describe 'missing routes file' do
+      setup :prepare_destination
+
+      before do
+        run_generator
+      end
+
+      test 'generator does not raise when config/routes.rb is absent' do
+        assert_no_file 'config/routes.rb'
+      end
+    end
   end
 end
