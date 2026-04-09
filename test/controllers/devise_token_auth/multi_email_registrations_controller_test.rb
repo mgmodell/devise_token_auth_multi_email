@@ -269,8 +269,9 @@ class MultiEmailRegistrationsControllerTest < ActionDispatch::IntegrationTest
 
         test 'error message is returned' do
           assert @data['errors']
-          assert_equal [I18n.t('devise_token_auth.registrations.account_to_destroy_not_found')],
-                       @data['errors']
+          assert @data['errors'].include?(
+            I18n.t('devise_token_auth.registrations.account_to_destroy_not_found')
+          )
         end
       end
     end

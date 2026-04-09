@@ -178,11 +178,13 @@ class UserConcernMethodsTest < ActiveSupport::TestCase
       end
 
       test 'updates the updated_at timestamp for the client token' do
-        before_time = @resource.tokens[@client_id]['updated_at']
+        # age_token set updated_at to the past; extend_batch_buffer should
+        # refresh it to approximately now.
         @resource.extend_batch_buffer(@token, @client_id)
-        after_time = @resource.tokens[@client_id]['updated_at']
-        assert after_time.to_time >= before_time.to_time,
-               'updated_at should be refreshed by extend_batch_buffer'
+        updated_at = @resource.tokens[@client_id]['updated_at']
+        # updated_at should now be within the last 5 seconds
+        assert updated_at.to_time >= Time.zone.now - 5.seconds,
+               'updated_at should be refreshed to approximately now by extend_batch_buffer'
       end
 
       test 'persists the token record to the database' do
@@ -235,12 +237,24 @@ class UserConcernMethodsTest < ActiveSupport::TestCase
         refute DeviseTokenAuth::Concerns::User.tokens_match?(raw.token_hash, 'wrong')
       end
 
-      test 'populates the equality cache' do
-        # Drive the cache by calling tokens_match? and verify the method does
-        # not raise even after the cache is populated.
+      test 'populates and reuses the equality cache' do
         raw = DeviseTokenAuth::TokenFactory.create
-        2.times { DeviseTokenAuth::Concerns::User.tokens_match?(raw.token_hash, raw.token) }
-        assert DeviseTokenAuth::Concerns::User.tokens_match?(raw.token_hash, raw.token)
+        # Reset the cache to isolate this test
+        DeviseTokenAuth::Concerns::User.instance_variable_set(:@token_equality_cache, nil)
+
+        # First call — cache is empty, result computed from BCrypt
+        first = DeviseTokenAuth::Concerns::User.tokens_match?(raw.token_hash, raw.token)
+        cache_after_first = DeviseTokenAuth::Concerns::User.instance_variable_get(:@token_equality_cache)
+
+        assert first, 'Expected tokens_match? to return truthy for a matching pair'
+        assert_equal 1, cache_after_first.size, 'Cache should contain one entry after first call'
+
+        # Second call — same inputs, result served from cache (no BCrypt re-computation)
+        second = DeviseTokenAuth::Concerns::User.tokens_match?(raw.token_hash, raw.token)
+        cache_after_second = DeviseTokenAuth::Concerns::User.instance_variable_get(:@token_equality_cache)
+
+        assert second, 'Cached result should also be truthy'
+        assert_equal 1, cache_after_second.size, 'Cache size should remain 1 (no duplicate entry)'
       end
     end
 
