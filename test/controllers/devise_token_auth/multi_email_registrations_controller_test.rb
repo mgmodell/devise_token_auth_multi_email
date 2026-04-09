@@ -148,5 +148,147 @@ class MultiEmailRegistrationsControllerTest < ActionDispatch::IntegrationTest
         assert_not_empty @data['errors']
       end
     end
+
+    # -----------------------------------------------------------------------
+    # Shared helper: register, confirm, and sign in a MultiEmailUser.
+    # Returns [user, auth_headers].
+    # -----------------------------------------------------------------------
+    def sign_in_confirmed_user(email: nil)
+      email ||= Faker::Internet.unique.email
+      post '/multi_email_auth', params: registration_params(email: email)
+      assert_equal 200, response.status, "Setup registration failed: #{response.body}"
+      user = assigns(:resource)
+      user.confirm
+
+      post '/multi_email_auth/sign_in',
+           params: { email: email, password: 'secret123' }
+      assert_equal 200, response.status, "Sign-in failed: #{response.body}"
+
+      auth_headers = {
+        'access-token' => response.headers['access-token'],
+        'client'       => response.headers['client'],
+        'uid'          => response.headers['uid'],
+        'token-type'   => response.headers['token-type']
+      }
+      [user, auth_headers]
+    end
+
+    # -----------------------------------------------------------------------
+    # Update account (PUT /multi_email_auth)
+    # -----------------------------------------------------------------------
+    describe 'account update' do
+      describe 'successful account update (name field)' do
+        before do
+          @user, @auth_headers = sign_in_confirmed_user
+          age_token(@user, @auth_headers['client'])
+
+          put '/multi_email_auth',
+              params: { name: 'Updated Name' },
+              headers: @auth_headers
+          @data = JSON.parse(response.body)
+        end
+
+        test 'request is successful' do
+          assert_equal 200, response.status
+        end
+
+        test 'response status is success' do
+          assert_equal 'success', @data['status']
+        end
+
+        test 'updated name is reflected in the response' do
+          assert_equal 'Updated Name', @data['data']['name']
+        end
+
+        test 'name is persisted to the database' do
+          @user.reload
+          assert_equal 'Updated Name', @user.name
+        end
+      end
+
+      describe 'account update without authentication' do
+        before do
+          put '/multi_email_auth',
+              params: { name: 'Unauthenticated Update' }
+          @data = JSON.parse(response.body)
+        end
+
+        test 'request fails with 404' do
+          assert_equal 404, response.status
+        end
+
+        test 'user not found error is returned' do
+          assert @data['errors']
+        end
+      end
+
+      describe 'account update with empty body' do
+        before do
+          @user, @auth_headers = sign_in_confirmed_user
+          age_token(@user, @auth_headers['client'])
+
+          put '/multi_email_auth',
+              params: {},
+              headers: @auth_headers
+          @data = JSON.parse(response.body)
+        end
+
+        test 'request fails with 422' do
+          assert_equal 422, response.status
+        end
+      end
+    end
+
+    # -----------------------------------------------------------------------
+    # Destroy account (DELETE /multi_email_auth)
+    # -----------------------------------------------------------------------
+    describe 'account destroy' do
+      describe 'successful account deletion' do
+        before do
+          @user, @auth_headers = sign_in_confirmed_user
+          @user_id = @user.id
+          age_token(@user, @auth_headers['client'])
+
+          delete '/multi_email_auth', headers: @auth_headers
+          @data = JSON.parse(response.body)
+        end
+
+        test 'request is successful' do
+          assert_equal 200, response.status
+        end
+
+        test 'success status is returned' do
+          assert_equal 'success', @data['status']
+        end
+
+        test 'user is removed from the database' do
+          refute MultiEmailUser.where(id: @user_id).exists?,
+                 'MultiEmailUser should be deleted after destroy'
+        end
+
+        test 'associated email records are also deleted (dependent: :destroy)' do
+          refute MultiEmailUserEmail.where(multi_email_user_id: @user_id).exists?,
+                 'Email records should be destroyed with the user'
+        end
+      end
+
+      describe 'account deletion without authentication' do
+        before do
+          delete '/multi_email_auth'
+          @data = JSON.parse(response.body)
+        end
+
+        test 'request fails with 404' do
+          assert_equal 404, response.status
+        end
+
+        test 'error message is returned' do
+          assert @data['errors']
+          assert @data['errors'].include?(
+            I18n.t('devise_token_auth.registrations.account_to_destroy_not_found')
+          )
+        end
+      end
+    end
   end
 end
