@@ -27,7 +27,7 @@ email addresses per user.
   * Login and logout
   * Password reset, account confirmation
 * Support for [multiple user models](./docs/usage/multiple_models.md).
-* Support for multiple emails using * [devise-multi_email](https://github.com/allenwq/devise-multi_email)
+* Support for multiple emails using [devise-multi_email](https://github.com/allenwq/devise-multi_email)
 * It is [secure](docs/security.md).
 
 This project leverages the following gems:
