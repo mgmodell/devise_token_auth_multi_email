@@ -46,11 +46,26 @@ class MultiEmailRegistrationsControllerTest < ActionDispatch::IntegrationTest
         assert MultiEmailUser.respond_to?(:find_by_email)
       end
 
-      test 'MultiEmailUser does NOT carry the concern uniqueness validator' do
-        # email uniqueness is handled by the emails table, not the user model
-        refute MultiEmailUser.validators_on(:email).any? { |v|
-          v.is_a?(ActiveRecord::Validations::UniquenessValidator)
-        }
+      test 'concern uniqueness validator never fires for MultiEmailUser' do
+        # The concern adds a uniqueness validator with a runtime :if guard that
+        # skips it whenever the model responds to :multi_email_association.
+        # This ensures the validator is never exercised on multi-email models
+        # (which have no email column and would otherwise crash on MySQL via
+        # nil.case_sensitive?).
+        #
+        # The :if lambda is called via instance_exec on the record (arity 0),
+        # so self inside the lambda is the user instance.
+        user = MultiEmailUser.new(provider: 'email', uid: 'test@example.com')
+        MultiEmailUser.validators_on(:email).select { |v|
+          v.is_a?(ActiveRecord::Validations::UniquenessValidator) &&
+            Array(v.options[:scope]).include?(:provider)
+        }.each do |validator|
+          if_procs = Array(validator.options[:if]).select { |c| c.respond_to?(:call) }
+          refute if_procs.empty?,
+                 'DTA concern uniqueness validator must have a runtime :if guard'
+          assert if_procs.none? { |c| user.instance_exec(&c) },
+                 'DTA concern uniqueness validator should not fire for multi-email models'
+        end
       end
 
       test 'MultiEmailUserEmail has email uniqueness validator from EmailValidatable' do

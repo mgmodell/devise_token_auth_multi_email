@@ -8,15 +8,18 @@ module DeviseTokenAuth::Concerns::UserOmniauthCallbacks
     validates :email, :devise_token_auth_email => true, allow_nil: true, allow_blank: true, if: lambda { uid_and_provider_defined? && email_provider? }
     validates_presence_of :uid, if: lambda { uid_and_provider_defined? && !email_provider? }
 
-    # Only skip the uniqueness validation for models that use devise-multi_email
-    # (detected by the presence of the multi_email_association class method, which
-    # Devise::MultiEmail::ParentModelExtensions adds via :multi_email_authenticatable).
-    # Standard models always validate; multi_email models manage uniqueness via the
-    # emails association table instead.
-    unless Gem.loaded_specs['devise-multi_email'] && respond_to?(:multi_email_association)
-      # only validate unique emails among email registration users
-      validates :email, uniqueness: { case_sensitive: false, scope: :provider }, on: :create, if: lambda { uid_and_provider_defined? && email_provider? }
-    end
+    # Only validate email uniqueness for models that do NOT use devise-multi_email.
+    # Multi-email models manage uniqueness via the emails association table instead.
+    #
+    # The check is done at runtime (inside the lambda) rather than at class-load
+    # time, so that it works correctly regardless of the order in which modules are
+    # included.  If the class responds to :multi_email_association at the point the
+    # validation is about to run, we know this is a multi-email model and skip the
+    # check.  This also avoids calling column_for_attribute(:email) on a model that
+    # has no email column, which would otherwise cause MySQL to call
+    # nil.case_sensitive? and raise a NoMethodError.
+    validates :email, uniqueness: { case_sensitive: false, scope: :provider }, on: :create,
+              if: lambda { uid_and_provider_defined? && email_provider? && !self.class.respond_to?(:multi_email_association) }
 
     # keep uid in sync with email
     before_save :sync_uid
