@@ -117,11 +117,15 @@ jobs:
     name: Coveralls Finished
     needs: test
     if: always()
+    environment: test
     runs-on: ubuntu-latest
     environment: test
     permissions: {}
+    env:
+      COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
     steps:
       - name: Notify Coveralls that all parallel jobs are done
+        if: env.COVERALLS_REPO_TOKEN != ''
         run: |
-          curl -s "https://coveralls.io/webhook?repo_token=${{ secrets.COVERALLS_REPO_TOKEN }}" \
+          curl --fail -s "https://coveralls.io/webhook?repo_token=${{ secrets.COVERALLS_REPO_TOKEN }}" \
             -d "payload[build_num]=${{ github.run_number }}&payload[status]=done"
