@@ -83,6 +83,7 @@ jobs:
       BUNDLE_GEMFILE: ${{ matrix.gemfile }}
       COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
       COVERALLS_PARALLEL: true
+      CI_BUILD_NUMBER: ${{ github.run_number }}
     steps:
       - uses: actions/checkout@v5
       - name: Setup Bundler 1.x for Rails 4.x
@@ -117,6 +118,7 @@ jobs:
     needs: test
     if: always()
     runs-on: ubuntu-latest
+    environment: test
     permissions: {}
     steps:
       - name: Notify Coveralls that all parallel jobs are done
