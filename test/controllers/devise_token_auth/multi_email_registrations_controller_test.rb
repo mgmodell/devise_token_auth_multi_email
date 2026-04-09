@@ -135,31 +135,33 @@ class MultiEmailRegistrationsControllerTest < ActionDispatch::IntegrationTest
     end
 
     # -----------------------------------------------------------------------
+    # Shared helper: register, confirm, and sign in a MultiEmailUser.
+    # Returns [user, auth_headers].
+    # -----------------------------------------------------------------------
+    def sign_in_confirmed_user(email: nil)
+      email ||= Faker::Internet.unique.email
+      post '/multi_email_auth', params: registration_params(email: email)
+      assert_equal 200, response.status, "Setup registration failed: #{response.body}"
+      user = assigns(:resource)
+      user.confirm
+
+      post '/multi_email_auth/sign_in',
+           params: { email: email, password: 'secret123' }
+      assert_equal 200, response.status, "Sign-in failed: #{response.body}"
+
+      auth_headers = {
+        'access-token' => response.headers['access-token'],
+        'client'       => response.headers['client'],
+        'uid'          => response.headers['uid'],
+        'token-type'   => response.headers['token-type']
+      }
+      [user, auth_headers]
+    end
+
+    # -----------------------------------------------------------------------
     # Update account (PUT /multi_email_auth)
     # -----------------------------------------------------------------------
     describe 'account update' do
-      # Helper: register, confirm, and sign in a MultiEmailUser.
-      # Returns [user, auth_headers].
-      def sign_in_confirmed_user(email: nil)
-        email ||= Faker::Internet.unique.email
-        post '/multi_email_auth', params: registration_params(email: email)
-        assert_equal 200, response.status, "Setup registration failed: #{response.body}"
-        user = assigns(:resource)
-        user.confirm
-
-        post '/multi_email_auth/sign_in',
-             params: { email: email, password: 'secret123' }
-        assert_equal 200, response.status, "Sign-in failed: #{response.body}"
-
-        auth_headers = {
-          'access-token' => response.headers['access-token'],
-          'client'       => response.headers['client'],
-          'uid'          => response.headers['uid'],
-          'token-type'   => response.headers['token-type']
-        }
-        [user, auth_headers]
-      end
-
       describe 'successful account update (name field)' do
         before do
           @user, @auth_headers = sign_in_confirmed_user
@@ -226,26 +228,6 @@ class MultiEmailRegistrationsControllerTest < ActionDispatch::IntegrationTest
     # Destroy account (DELETE /multi_email_auth)
     # -----------------------------------------------------------------------
     describe 'account destroy' do
-      def sign_in_confirmed_user(email: nil)
-        email ||= Faker::Internet.unique.email
-        post '/multi_email_auth', params: registration_params(email: email)
-        assert_equal 200, response.status, "Setup registration failed: #{response.body}"
-        user = assigns(:resource)
-        user.confirm
-
-        post '/multi_email_auth/sign_in',
-             params: { email: email, password: 'secret123' }
-        assert_equal 200, response.status, "Sign-in failed: #{response.body}"
-
-        auth_headers = {
-          'access-token' => response.headers['access-token'],
-          'client'       => response.headers['client'],
-          'uid'          => response.headers['uid'],
-          'token-type'   => response.headers['token-type']
-        }
-        [user, auth_headers]
-      end
-
       describe 'successful account deletion' do
         before do
           @user, @auth_headers = sign_in_confirmed_user

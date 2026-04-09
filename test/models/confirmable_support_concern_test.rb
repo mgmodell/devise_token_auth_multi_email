@@ -43,8 +43,8 @@ class ConfirmableSupportConcernTest < ActiveSupport::TestCase
         resource = ConfirmableUser.new(email: 'new@example.com')
         result = resource.send(:email_value_in_database)
         # A new record has no persisted value — expect nil or blank string
-        assert result.nil? || result == '',
-               "Expected nil or '' for unsaved record, got: #{result.inspect}"
+        assert result.blank?,
+               "Expected blank value for unsaved record, got: #{result.inspect}"
       end
     end
 
