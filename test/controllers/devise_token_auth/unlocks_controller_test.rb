@@ -9,6 +9,8 @@ require 'test_helper'
 #  was the appropriate message delivered in the json payload?
 
 class DeviseTokenAuth::UnlocksControllerTest < ActionController::TestCase
+  tests DeviseTokenAuth::UnlocksController
+
   describe DeviseTokenAuth::UnlocksController do
     setup do
       @request.env['devise.mapping'] = Devise.mappings[:lockable_user]

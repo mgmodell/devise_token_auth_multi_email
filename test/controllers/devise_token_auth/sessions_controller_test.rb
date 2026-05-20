@@ -9,6 +9,8 @@ require 'test_helper'
 #  was the appropriate message delivered in the json payload?
 
 class DeviseTokenAuth::SessionsControllerTest < ActionController::TestCase
+  tests DeviseTokenAuth::SessionsController
+
   describe DeviseTokenAuth::SessionsController do
     describe 'Confirmed user' do
       before do

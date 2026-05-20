@@ -23,6 +23,7 @@ require 'active_support/testing/autorun'
 # Replace minitest/rails with plain minitest to avoid SIGTRAP on Ruby 3.3.6/ARM64
 require 'minitest'
 require 'minitest/spec'
+require 'minitest/mock'
 require 'minitest/reporters'
 # Load mocha after minitest but before running tests
 require 'mocha/minitest'
