@@ -319,7 +319,6 @@ class DeviseTokenAuth::PasswordsControllerTest < ActionController::TestCase
 
               after do
                 DeviseTokenAuth.cookie_enabled = false
-                DeviseTokenAuth.require_client_password_reset_token = false
               end
             end
           end
