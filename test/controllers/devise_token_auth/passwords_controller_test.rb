@@ -9,6 +9,8 @@ require 'test_helper'
 #  was the appropriate message delivered in the json payload?
 
 class DeviseTokenAuth::PasswordsControllerTest < ActionController::TestCase
+  tests DeviseTokenAuth::PasswordsController
+
   describe DeviseTokenAuth::PasswordsController do
     describe 'Password reset' do
       before do
@@ -295,6 +297,29 @@ class DeviseTokenAuth::PasswordsControllerTest < ActionController::TestCase
 
               test 'response should contain reset_password_token param' do
                 assert_equal @mail_reset_token, @qs['reset_password_token']
+              end
+            end
+
+            describe 'with cookie_enabled' do
+              before do
+                DeviseTokenAuth.require_client_password_reset_token = false
+                DeviseTokenAuth.cookie_enabled = true
+                get :edit,
+                    params: { reset_password_token: @mail_reset_token,
+                              redirect_url: @mail_redirect_url }
+              end
+
+              test 'response should have success redirect status' do
+                assert_equal 302, response.status
+              end
+
+              test 'auth cookie is set' do
+                assert response.cookies[DeviseTokenAuth.cookie_name]
+              end
+
+              after do
+                DeviseTokenAuth.cookie_enabled = false
+                DeviseTokenAuth.require_client_password_reset_token = false
               end
             end
           end
@@ -691,6 +716,29 @@ class DeviseTokenAuth::PasswordsControllerTest < ActionController::TestCase
 
           test 'response should fail' do
             assert_equal 401, response.status
+          end
+        end
+
+        describe 'with non-email provider' do
+          before do
+            @resource.update_column(:provider, 'facebook')
+            @auth_headers = @resource.create_new_auth_token
+            request.headers.merge!(@auth_headers)
+
+            put :update, params: { password: 'new_password',
+                                   password_confirmation: 'new_password' }
+            @data = JSON.parse(response.body)
+          end
+
+          test 'response should return 422' do
+            assert_equal 422, response.status
+          end
+
+          test 'response should contain password not required error' do
+            assert @data['errors']
+            assert_equal @data['errors'],
+                         [I18n.t('devise_token_auth.passwords.password_not_required',
+                                 provider: 'Facebook')]
           end
         end
 

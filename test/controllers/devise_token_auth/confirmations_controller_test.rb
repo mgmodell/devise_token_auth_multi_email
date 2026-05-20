@@ -9,6 +9,8 @@ require 'test_helper'
 #  was the appropriate message delivered in the json payload?
 
 class DeviseTokenAuth::ConfirmationsControllerTest < ActionController::TestCase
+  tests DeviseTokenAuth::ConfirmationsController
+
   describe DeviseTokenAuth::ConfirmationsController do
     def token_and_client_config_from(body)
       token         = body.match(/confirmation_token=([^&]*)[&"]/)[1]
@@ -210,6 +212,12 @@ class DeviseTokenAuth::ConfirmationsControllerTest < ActionController::TestCase
 
           @resource = assigns(:resource)
           refute @resource.confirmed?
+        end
+
+        test 'raises RoutingError when redirect_url is nil and confirmation fails' do
+          assert_raises(ActionController::RoutingError) do
+            get :show, params: { confirmation_token: 'bogus' }
+          end
         end
 
         test 'request resend confirmation without email' do

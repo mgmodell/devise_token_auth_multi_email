@@ -27,11 +27,6 @@ class MultiEmailConfirmationsControllerTest < ActionDispatch::IntegrationTest
       }
     end
 
-    # Parse the confirmation token out of a mailer body.
-    def token_from_mail(mail)
-      mail.body.match(/confirmation_token=([^&]*)[&"]/)[1]
-    end
-
     before do
       @redirect_url = Faker::Internet.url
 
@@ -41,7 +36,10 @@ class MultiEmailConfirmationsControllerTest < ActionDispatch::IntegrationTest
       assert_equal 200, response.status, "Setup registration failed: #{response.body}"
       @user = assigns(:resource)
       @mail = ActionMailer::Base.deliveries.last
-      @token = token_from_mail(@mail)
+      # The confirmation token is stored on the email record.  With multi_email_confirmable
+      # the token is NOT embedded in the confirmation email URL (it is sent via a separate
+      # mechanism), so we obtain it directly from the primary email association.
+      @token = @user.confirmation_token
     end
 
     # -----------------------------------------------------------------------
