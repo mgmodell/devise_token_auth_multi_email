@@ -87,12 +87,14 @@ class DeviseTokenAuth::PasswordsControllerTest < ActionController::TestCase
       end
 
       describe 'resource update method selection' do
-        before do
+        test 'uses update when password changes are allowed' do
           @resource.allow_password_change = true
+          assert_equal 'update', @controller.send(:resource_update_method)
         end
 
-        test 'uses update when password changes are allowed' do
-          assert_equal 'update', @controller.send(:resource_update_method)
+        test 'uses update_with_password when password changes are not allowed' do
+          @resource.allow_password_change = false
+          assert_equal 'update_with_password', @controller.send(:resource_update_method)
         end
       end
 
