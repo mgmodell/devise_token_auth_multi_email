@@ -86,6 +86,16 @@ class DeviseTokenAuth::PasswordsControllerTest < ActionController::TestCase
         end
       end
 
+      describe 'resource update method selection' do
+        before do
+          @resource.allow_password_change = true
+        end
+
+        test 'uses update when password changes are allowed' do
+          assert_equal 'update', @controller.send(:resource_update_method)
+        end
+      end
+
       describe 'request password reset' do
         describe 'unknown user' do
           describe 'without paranoid mode' do
