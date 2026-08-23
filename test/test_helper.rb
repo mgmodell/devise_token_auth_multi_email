@@ -50,9 +50,13 @@ end
 class ActiveSupport::TestCase
   include FactoryBot::Syntax::Methods
 
-  # check_pending! was removed in Rails 7.2+
-  if DEVISE_TOKEN_AUTH_ORM == :active_record && ActiveRecord::Migration.respond_to?(:check_pending!)
-    ActiveRecord::Migration.check_pending!
+  if DEVISE_TOKEN_AUTH_ORM == :active_record
+    # `check_pending!` was deprecated in Rails 7.1 and removed in Rails 8.0
+    if ActiveRecord::Migration.respond_to?(:check_all_pending!)
+      ActiveRecord::Migration.check_all_pending!
+    elsif ActiveRecord::Migration.respond_to?(:check_pending!)
+      ActiveRecord::Migration.check_pending!
+    end
   end
 
   if DEVISE_TOKEN_AUTH_ORM == :active_record

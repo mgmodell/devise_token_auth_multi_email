@@ -3,7 +3,8 @@
 [
   { name: '7-0', version: '7.0' },
   { name: '7-2', version: '7.2' },
-  { name: '8-0', version: '8.0' }
+  { name: '8-0', version: '8.0' },
+  { name: '8-1', version: '8.1' }
 ].each do |rails|
     db_adapter = ENV.fetch('DB', 'sqlite' )
     appraise "rails-#{rails[:name]}" do
