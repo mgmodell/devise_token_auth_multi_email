@@ -32,6 +32,11 @@ module DeviseTokenAuth
         run_generator
       end
 
+      test 'custom primary key type is exposed as a migration option' do
+        generator = InstallGenerator.new([], { primary_key_type: 'uuid' }, destination_root: destination_root)
+        assert_equal ', id: :uuid', generator.send(:primary_key_string)
+      end
+
       if DEVISE_TOKEN_AUTH_ORM == :active_record
         test 'migration is created' do
           assert_migration 'db/migrate/devise_token_auth_create_users.rb'

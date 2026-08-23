@@ -235,6 +235,20 @@ class DeviseTokenAuth::SessionsControllerTest < ActionController::TestCase
         end
       end
 
+      describe 'failure when password is missing' do
+        before do
+          post :create,
+               params: { email: @existing_user.email }
+
+          @data = JSON.parse(response.body)
+        end
+
+        test 'request should fail with bad credentials' do
+          assert_equal 401, response.status
+          assert_equal @data['errors'], [I18n.t('devise_token_auth.sessions.bad_credentials')]
+        end
+      end
+
       describe 'failure with bad password when change_headers_on_each_request false' do
         before do
           DeviseTokenAuth.change_headers_on_each_request = false

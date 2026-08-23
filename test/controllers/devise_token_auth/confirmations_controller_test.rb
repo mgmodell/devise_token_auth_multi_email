@@ -139,6 +139,20 @@ class DeviseTokenAuth::ConfirmationsControllerTest < ActionController::TestCase
                 assert_equal @data['errors'], [I18n.t('devise_token_auth.confirmations.user_not_found', email: 'chester@cheet.ah')]
               end
             end
+
+            describe 'without an email' do
+              before do
+                post :create,
+                     params: { redirect_url: @redirect_url },
+                     xhr: true
+                @data = JSON.parse(response.body)
+              end
+
+              test 'response should fail with a missing email error' do
+                assert_equal 401, response.status
+                assert_equal @data['errors'], [I18n.t('devise_token_auth.confirmations.missing_email')]
+              end
+            end
           end
         end
 
